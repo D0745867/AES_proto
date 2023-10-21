@@ -136,7 +136,7 @@ module G16_inv (
 );
     wire [1:0]a = x[3:2];
     wire [1:0]b = x[1:0];
-    wire [1:0] c, ct., d, e, p, q;
+    wire [1:0] c, ct, d, e, p, q;
     G4_inv g4inv1(.g4_inv_o(ct), .x(a ^ b));
     G4_mul_N g4mn(.g4mul_N_o(c), .x(ct));
     G4_mul g4m1(.g4mul_o(d), .x(a), .y(b));
@@ -145,4 +145,51 @@ module G16_inv (
     G4_mul g4m3(.g4mul_o(q), .x(e), .y(a));
     assign g16_inv_o = ( p << 2) | q;
 
+endmodule
+
+// not tested yet
+module G256_inv (
+    output [7:0] g256_inv_o,
+    input [7:0] x
+);
+    wire [3:0] a = x[7:4];
+    wire [3:0] b = x[3:0];
+    wire [3:0] c, d, e, p, q; 
+    G16_sq_mul_u g16sq(.g16_mul_sq_u_o(c), .x(a ^ b));
+    G16_mul g16mul1 (.g16_mul_o(d), .x(a), .y(b));
+    G16_inv g16inv (.g16_inv_o(e), .x(c ^ d));
+    G16_mul g16mul2 (.g16_mul_o(p), .x(e), .y(b));
+    G16_mul g16mul3 (.g16_mul_o(q), .x(e), .y(a));
+
+endmodule
+
+//not tested yet
+module G256_new_basis (
+    input [7:0] x,      // 输入x，8位宽
+    input [7:0] b,      // 输入b，8位宽
+    output reg [7:0] y  // 输出y，8位宽
+);
+reg [7:0] g2b [0:7];
+int i;
+
+// 放錯了!
+assign g2b[0] = 8'b00100001;
+assign g2b[1] = 8'b11010011;
+assign g2b[2] = 8'b10000001; 
+assign g2b[3] = 8'b01001010;
+assign g2b[4] = 8'b10001010;
+assign g2b[5] = 8'b10111001;
+assign g2b[6] = 8'b10110000;
+assign g2b[7] = 8'b11111111;
+
+
+always @(x, g2b) begin
+    y = 8'b0; 
+    for (i = 0; i < 8; i = i + 1) begin
+        if (x & (1 << (7 - i))) begin
+            y = y ^ g2b[i];
+        end
+    end
+end
+    
 endmodule

@@ -1,7 +1,8 @@
 `timescale 1ns/1ns
 // `define G4_mul
 // `define G4_mul_n
-`define G16_mul
+// `define G16_mul
+`define G256_inv
 class G4RandomClass;
     rand bit [1:0] x, y;
     constraint c1 {x <= 3 ; y <= 3;}
@@ -12,8 +13,10 @@ module tb_G4_mul;
     logic [1:0] g4m_o;
     logic [1:0] g4mn_o;
     logic [3:0] g16m_o;
+    logic [7:0] g256inv_o;
     logic [1:0] x1, y1;
     logic [3:0] x4, y4;
+    logic [7:0] x8, y8;
     int i = 0;
     int j = 0;
     int statis = 0;
@@ -21,7 +24,7 @@ module tb_G4_mul;
     G4_mul dut_g4m (.g4mul_o(g4m_o), .x(x1), .y(y1));
     G4_mul_N dut_g4mn (.g4mul_N_o(g4mn_o), .x(x1));
     G16_mul dut_g16m (.g16_mul_o(g16m_o), .x(x4), .y(y4));
-
+    G256_new_basis dut_g256(.y(g256inv_o), .x(x8), .b(y8));
     `ifdef G4_mul
     initial begin
         G4_g = new();
@@ -73,10 +76,21 @@ module tb_G4_mul;
         end
     $finish();
     end
+    `elsif G256_inv
+    initial begin
+
+        x8 = 8'd245;
+        #5;
+        $display("Value of x :%0d and y: %0d, result: %0d", x8, y8, g256inv_o);
+        #5;
+
+    $finish();
+    end
     `endif
     initial begin
         $fsdbDumpfile("G4_mul.fsdb");
         $fsdbDumpvars;
+        $fsdbDumpMDA();
     end
     
     
