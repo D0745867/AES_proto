@@ -79,7 +79,7 @@ module tb_G4_mul;
     `elsif G256_inv
     initial begin
 
-        x8 = 8'd245;
+        x8 = 8'd195;
         #5;
         $display("Value of x :%0d and y: %0d, result: %0d", x8, y8, g256inv_o);
         #5;

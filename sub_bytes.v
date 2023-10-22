@@ -163,23 +163,22 @@ module G256_inv (
 
 endmodule
 
-//not tested yet
+// Test pass
 module G256_new_basis (
-    input [7:0] x,      // 输入x，8位宽
-    input [7:0] b,      // 输入b，8位宽
-    output reg [7:0] y  // 输出y，8位宽
+    input [7:0] x,   
+    input [7:0] b,      
+    output reg [7:0] y 
 );
 reg [7:0] g2b [0:7];
 int i;
 
-// 放錯了!
-assign g2b[0] = 8'b00100001;
-assign g2b[1] = 8'b11010011;
-assign g2b[2] = 8'b10000001; 
-assign g2b[3] = 8'b01001010;
-assign g2b[4] = 8'b10001010;
-assign g2b[5] = 8'b10111001;
-assign g2b[6] = 8'b10110000;
+assign g2b[0] = 8'b10011000;
+assign g2b[1] = 8'b11110011;
+assign g2b[2] = 8'b11110010; 
+assign g2b[3] = 8'b01001000;
+assign g2b[4] = 8'b00001001;
+assign g2b[5] = 8'b10000001;
+assign g2b[6] = 8'b10101001;
 assign g2b[7] = 8'b11111111;
 
 
