@@ -5,9 +5,9 @@ module SubBytes (
     input [7:0] byte_in
 );
     // Store default claulate elements
-    reg [7:0] data_A[0:7];
-    reg [7:0] data_g2b[0:7];
-    reg [7:0] data_b2g[0:7];
+    wire [7:0] data_A[0:7];
+    wire [7:0] data_g2b[0:7];
+    wire [7:0] data_b2g[0:7];
 
     // Store
     reg [7:0] g2b;
@@ -16,14 +16,14 @@ module SubBytes (
     reg [7:0] sub_result;
 
     // Convert matrix dimention to pass it between module ports
-    wire data_A_1d = { data_A[0], data_A[1], data_A[2], data_A[3]
-    , data_A[4], data_A[5], data_A[6], data_A[7]}
+    wire [8*8 - 1:0] data_A_1d = { data_A[0], data_A[1], data_A[2], data_A[3]
+    , data_A[4], data_A[5], data_A[6], data_A[7]};
 
-    wire data_g2b_1d = { data_g2b[0], data_g2b[1], data_g2b[2], data_g2b[3]
-    , data_g2b[4], data_g2b[5], data_g2b[6], data_g2b[7]}
+    wire [8*8 - 1:0] data_g2b_1d = { data_g2b[0], data_g2b[1], data_g2b[2], data_g2b[3]
+    , data_g2b[4], data_g2b[5], data_g2b[6], data_g2b[7]};
 
-    wire data_b2g_1d = { data_b2g[0], data_b2g[1], data_b2g[2], data_b2g[3]
-    , data_b2g[4], data_b2g[5], data_b2g[6], data_b2g[7]}
+    wire [8*8 - 1:0] data_b2g_1d = { data_b2g[0], data_b2g[1], data_b2g[2], data_b2g[3]
+    , data_b2g[4], data_b2g[5], data_b2g[6], data_b2g[7]};
 
     // Data A matrix initial value
     assign data_A[0] = 8'b10001111;
@@ -55,7 +55,12 @@ module SubBytes (
     assign data_b2g[6] = 8'b11011110;
     assign data_b2g[7] = 8'b01100000;
 
-    G256_new_basis dut_g2b (.g256_nb_o(), .x(), .b());
+    G256_new_basis dut_g2b (.g256_nb_o(g2b), .x(byte_in), .b(data_g2b_1d));
+    G256_inv dut_inv(.g256_inv_o(inv), .x(g2b));
+    G256_new_basis dut_b2g (.g256_nb_o(b2g), .x(inv), .b(data_b2g_1d));
+    G256_new_basis dut_A (.g256_nb_o(sub_result), .x(b2g), .b(data_A_1d));
+
+    assign byte_o = sub_result ^ 8'h63;
 endmodule
 
 module G4_mul (
@@ -176,7 +181,7 @@ module G256_inv (
     G16_inv g16inv (.g16_inv_o(e), .x(c ^ d));
     G16_mul g16mul2 (.g16_mul_o(p), .x(e), .y(b));
     G16_mul g16mul3 (.g16_mul_o(q), .x(e), .y(a));
-
+    assign g256_inv_o = (p << 4) | q;
 endmodule
 
 // Test pass
@@ -185,8 +190,8 @@ module G256_new_basis (
     input [8*8 - 1:0] b,      
     output reg [7:0] g256_nb_o 
 );
-reg [7:0] mat [0:7];
-int i;
+wire [7:0] mat [0:7];
+reg [3:0] i;
 
 assign mat[0] = b[63:56];
 assign mat[1] = b[55:48];
@@ -198,7 +203,7 @@ assign mat[6] = b[15:8];
 assign mat[7] = b[7:0];
 
 
-always @(x, mat) begin
+always @(*) begin
     g256_nb_o = 8'b0; 
     for (i = 0; i < 8; i = i + 1) begin
         if (x & (1 << (7 - i))) begin
