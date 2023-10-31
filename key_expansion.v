@@ -10,16 +10,41 @@ module key_expansion (
     input rst_n,
     input clk
 );
+
+// RC value
+wire [5:0] rc_table [0:9]; 
+assign rc_table[0] = 6'h01;
+assign rc_table[0] = 6'h02;
+assign rc_table[0] = 6'h04;
+assign rc_table[0] = 6'h08;
+assign rc_table[0] = 6'h10;
+assign rc_table[0] = 6'h20;
+assign rc_table[0] = 6'h40;
+assign rc_table[0] = 6'h80;
+
+// Reuse SubBytes
+wire [7:0] subBytes_o,
+wire [7:0] subBytes_i
+assign subBytes_i = w_rot[cnt];
+SubBytes dut_subBytes(.byte_o(subBytes_o), .byte_in(subBytes_i));
+
 // Counter should be counted in previous level
+reg [31:0] w_matrix [0:3];
+reg [7:0] w_rot [0:3];
+reg [7:0] w_g_sub [0:3];
+wire [7:0]w_g_temp[0:3];
 
-reg [31:0] w_matrix [0:4];
+assign w_g_temp[0] = w_matrix[3][7:0];
+assign w_g_temp[1] = w_matrix[3][15:8];
+assign w_g_temp[2] = w_matrix[3][23:16];
+assign w_g_temp[3] = w_matrix[3][31:24];
 
-
-
-// Left Shift 1
-
-always @() begin
-    
+// Lest Shift - 1
+always @(*) begin
+    w_rot[0] = w_g_temp[1];
+    w_rot[1] = w_g_temp[2];
+    w_rot[2] = w_g_temp[3];
+    w_rot[3] = w_g_temp[0];
 end
 
 // w_matrix
@@ -38,16 +63,35 @@ always @(posedge clk or negedge rst_n) begin
             w_matrix[4] <= key_in[127:96];
         end
         else begin
-            case (cnt)
-                3'd0 :  begin
-                            
-                        end
-                3'd1 :
-                3'd2 :
-                default: 
-            endcase
+            // TODO: Write Back to the w_matrix (final XOR)
         end
     end
 end
+
+// SubBytes and Rcon
+always @(posedge clk or negedge rst_n) begin
+    if ( !rst_n ) begin
+        w_g_sub[0] <= 8'd0;
+        w_g_sub[1] <= 8'd0;
+        w_g_sub[2] <= 8'd0;
+        w_g_sub[3] <= 8'd0;
+    end
+    else begin
+        if(cnt == 3'd0) begin
+            w_g_sub[0] <= w_g_sub[0];
+            w_g_sub[1] <= w_g_sub[1];
+            w_g_sub[2] <= w_g_sub[2];
+            w_g_sub[3] <= w_g_sub[3];
+        end
+        else if(cnt >= 3'd2 && cnt <= 3'd5) begin
+            w_g_sub[cnt] <= subBytes_o;
+        end
+        else if(cnt == 3'd6) begin
+            w_g_sub[3] <= w_g_sub[3] ^ rc_table[round];
+        end  
+    end
+end
+
+
 
 endmodule
