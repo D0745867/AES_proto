@@ -33,6 +33,8 @@ reg [31:0] w_matrix [0:3];
 reg [7:0] w_rot [0:3];
 reg [7:0] w_g_sub [0:3];
 wire [7:0]w_g_temp[0:3];
+// New Round Key
+wire [31:0] w_matrix_cur [0:3];
 
 assign w_g_temp[0] = w_matrix[3][7:0];
 assign w_g_temp[1] = w_matrix[3][15:8];
@@ -47,6 +49,14 @@ always @(*) begin
     w_rot[3] = w_g_temp[0];
 end
 
+// w XOR in the last step
+always @(*) begin
+    w_matrix_cur[0] = {w_g_sub[3], w_g_sub[2], w_g_sub[1], w_g_sub[0]} ^ w_matrix[0];
+    w_matrix_cur[1] = w_matrix_cur[0] ^ w_matrix[1];
+    w_matrix_cur[2] = w_matrix_cur[1] ^ w_matrix[2];
+    w_matrix_cur[3] = w_matrix_cur[2] ^ w_matrix[3];
+end
+
 // w_matrix
 always @(posedge clk or negedge rst_n) begin
     if( !rst_n ) begin
@@ -59,11 +69,17 @@ always @(posedge clk or negedge rst_n) begin
         if(round == 4'd0) begin
             w_matrix[0] <= key_in[31:0];
             w_matrix[1] <= key_in[63:32];
-            w_matrix[3] <= key_in[95:64];
-            w_matrix[4] <= key_in[127:96];
+            w_matrix[2] <= key_in[95:64];
+            w_matrix[3] <= key_in[127:96];
         end
         else begin
-            // TODO: Write Back to the w_matrix (final XOR)
+            // Write Back to the w_matrix (final XOR)
+            if(cnt == 3'd7) begin
+                w_matrix[0] <= w_matrix_cur[0];
+                w_matrix[1] <= w_matrix_cur[1];
+                w_matrix[2] <= w_matrix_cur[2];
+                w_matrix[3] <= w_matrix_cur[3];
+            end
         end
     end
 end
@@ -84,14 +100,12 @@ always @(posedge clk or negedge rst_n) begin
             w_g_sub[3] <= w_g_sub[3];
         end
         else if(cnt >= 3'd2 && cnt <= 3'd5) begin
-            w_g_sub[cnt] <= subBytes_o;
+            w_g_sub[cnt - 3'd1] <= subBytes_o;
         end
         else if(cnt == 3'd6) begin
-            w_g_sub[3] <= w_g_sub[3] ^ rc_table[round];
+            w_g_sub[0] <= w_g_sub[0] ^ rc_table[round];
         end  
     end
 end
-
-
 
 endmodule
