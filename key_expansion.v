@@ -14,13 +14,15 @@ module key_expansion (
 // RC value
 wire [5:0] rc_table [0:9]; 
 assign rc_table[0] = 6'h01;
-assign rc_table[0] = 6'h02;
-assign rc_table[0] = 6'h04;
-assign rc_table[0] = 6'h08;
-assign rc_table[0] = 6'h10;
-assign rc_table[0] = 6'h20;
-assign rc_table[0] = 6'h40;
-assign rc_table[0] = 6'h80;
+assign rc_table[1] = 6'h02;
+assign rc_table[2] = 6'h04;
+assign rc_table[3] = 6'h08;
+assign rc_table[4] = 6'h10;
+assign rc_table[5] = 6'h20;
+assign rc_table[6] = 6'h40;
+assign rc_table[7] = 6'h80;
+assign rc_table[8] = 6'h1B;
+assign rc_table[9] = 6'h36;
 
 // Reuse SubBytes
 wire [7:0] subBytes_o,
