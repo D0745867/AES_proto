@@ -20,7 +20,8 @@ class driver;
     virtual key_expand.DRV ke;
     int i, j;
     task run();
-        ke.key_in = 
+        // Setting Key
+        ke.key_in =
         for (i=0 ; i < 11 ; i = i + 1) begin
             for (j = 0 ; j < 7; j = j + 1) begin
                 ke.round <= i;
