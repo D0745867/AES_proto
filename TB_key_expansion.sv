@@ -21,9 +21,12 @@ class driver;
     int i, j;
     task run();
         // Setting Key
-        ke.key_in =
+        // ke.key_in = { 8'h3C, 8'hA1, 8'h0B, 8'h21
+        //             , 8'h57, 8'hF0, 8'h19, 8'h16
+        //             , 8'h90, 8'h2E, 8'h13, 8'h80
+        //             , 8'hAC, 8'hC1, 8'h07, 8'hBD };
         for (i=0 ; i < 11 ; i = i + 1) begin
-            for (j = 0 ; j < 7; j = j + 1) begin
+            for (j = 0 ; j < 6; j = j + 1) begin
                 ke.round <= i;
                 ke.cnt <= j;
                 #10;
@@ -42,11 +45,30 @@ module TB_key_expand;
     // 實例化一個driver
     driver drv;
 
-    // key_expansion ke_dut(ke.round_key_o, ke.round, ke.cnt, ke.rst_n, ke.clk);
+    key_expansion ke_dut(ke.round_key_o, ke.key_in, ke.round, ke.cnt, ke.rst_n, ke.clk);
 
+    event rst_n_reset;
+
+    initial begin
+        // Setting Key
+        ke.key_in = { 8'h3C, 8'hA1, 8'h0B, 8'h21
+                    , 8'h57, 8'hF0, 8'h19, 8'h16
+                    , 8'h90, 8'h2E, 8'h13, 8'h80
+                    , 8'hAC, 8'hC1, 8'h07, 8'hBD };
+        // ke.key_in = { 8'hBD, 8'h07, 8'hC1, 8'hAC
+        //     , 8'h80, 8'h13, 8'h2E, 8'h90
+        //     , 8'h16, 8'h19, 8'hF0, 8'h57
+        //     , 8'h21, 8'h0B, 8'hA1, 8'h3C };
+    end
 
     initial begin
         ke.clk <= 0;
+        ke.rst_n <= 1;
+        #10;
+        ke.rst_n <= 0;
+        #10
+        -> rst_n_reset;
+        ke.rst_n <= 1;
     end
 
     always #5 ke.clk <= ~ke.clk;
@@ -54,7 +76,7 @@ module TB_key_expand;
     initial begin
         drv = new();
         drv.ke = ke;
-        #5;
+        wait (rst_n_reset.triggered); 
         drv.run();
     end
 
