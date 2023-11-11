@@ -1,7 +1,7 @@
 `timescale 1ns/1ns
 
 
-
+// TODO: Add bits lenth.
 module AES_128 (
     output ciphertext,
     input plaintext,
@@ -20,11 +20,13 @@ localparam ShiftRows = 3'd3;
 localparam MixColumns = 3'd4;
 
 reg [3:0] round;
+reg [ 4*4*8 - 1 : 0 ]round_key_o;
+reg [2:0] cnt,
 
 // Key Expansion
-key_expansion ke_dut(ke.round_key_o, ke.key_in, ke.round, ke.cnt, ke.rst_n, ke.clk);
+key_expansion ke_dut(.round_key_o(round_key_o), .key_in(master_key), .round(round), .cnt(cnt), .rst_n(rst_n), .clk(clk));
 
-
+// FSM next
 always @(*) begin
     case (current_state)
         IDLE : next_state = AddRoundKey;
@@ -46,6 +48,15 @@ always @(*) begin
     endcase
 end
 
+// FSM current
+always @(posedge clk or negedge rst_n) begin
+    if (~rst_n) begin
+        current_state <= IDLE;
+    end
+    else begin
+        current_state <= next_state;
+    end
+end
 
 
     

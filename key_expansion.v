@@ -97,4 +97,6 @@ always @(posedge clk or negedge rst_n) begin
     end
 end
 
+assign round_key_o = {w_matrix[3], w_matrix[2], w_matrix[1], w_matrix[0]};
+
 endmodule
