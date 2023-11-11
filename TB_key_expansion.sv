@@ -77,6 +77,7 @@ module TB_key_expand;
         drv = new();
         drv.ke = ke;
         wait (rst_n_reset.triggered); 
+        #5;
         drv.run();
     end
 
