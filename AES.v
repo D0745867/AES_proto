@@ -36,7 +36,7 @@ always @(*) begin
     case (current_state)
         IDLE : next_state = AddRoundKey;
         AddRoundKey: begin
-            if (cnt == 3'd5) begin
+            if (cnt == 3'd6) begin
                 if (round != 4'd11) next_state = SubBytes;
                 else next_state = IDLE; 
             end
@@ -88,7 +88,9 @@ always @(posedge clk or negedge rst_n) begin
     else begin
         case (current_state)
             AddRoundKey : begin
-                state <= state ^ round_key_o;
+                if(cnt == 3'd6) begin
+                    
+                end
             end 
             default: begin
                 state <= state;
