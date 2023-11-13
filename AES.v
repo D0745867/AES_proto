@@ -22,21 +22,22 @@ localparam MixColumns = 3'd4;
 reg [ 4*4*8 - 1 : 0 ] state;
 reg [3:0] round;
 reg [ 4*4*8 - 1 : 0 ] round_key_o;
-reg [2:0] cnt;
+reg [3:0] cnt;
 
 // wire [ 4*4*8 - 1 : 0 ] add_rk_o;
 
 // assign add_rk_o = state ^ round_key_o;
 // Key Expansion
 key_expansion ke_dut(.round_key_o(round_key_o), .key_in(master_key), .round(round), .cnt(cnt), .rst_n(rst_n), .clk(clk));
-
+// SubBytes
+SubBytes dut_subBytes(.byte_o(subBytes_o), .byte_in(subBytes_i));
 
 // FSM next
 always @(*) begin
     case (current_state)
         IDLE : next_state = AddRoundKey;
         AddRoundKey: begin
-            if (cnt == 3'd6) begin
+            if (cnt == 4'd6) begin
                 if (round != 4'd11) next_state = SubBytes;
                 else next_state = IDLE; 
             end
@@ -45,7 +46,12 @@ always @(*) begin
             end
         end
         SubBytes: begin
-            next_state = ShiftRows;
+            if (cnt == 4'd15) begin
+                next_state = ShiftRows;
+            end
+            else begin
+                next_state = SubBytes;
+            end
         end
         ShiftRows: begin
             if (round != 4'd11) next_state = MixColumns;
@@ -88,8 +94,8 @@ always @(posedge clk or negedge rst_n) begin
     else begin
         case (current_state)
             AddRoundKey : begin
-                if(cnt == 3'd6) begin
-                    
+                if(cnt == 4'd6) begin
+                    state <= state ^ round_key_o;
                 end
             end 
             default: begin
