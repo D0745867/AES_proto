@@ -8,10 +8,10 @@ module mix_columns (
     wire [7:0] mix_col_in_2d [0:3];
 
     // Matrix Convert
-    assign mix_col_in_2d[0] = mix_col_in[7:0];
-    assign mix_col_in_2d[1] = mix_col_in[15:8];
-    assign mix_col_in_2d[2] = mix_col_in[23:16];
-    assign mix_col_in_2d[3] = mix_col_in[31:24];
+    assign mix_col_in_2d[3] = mix_col_in[7:0];
+    assign mix_col_in_2d[2] = mix_col_in[15:8];
+    assign mix_col_in_2d[1] = mix_col_in[23:16];
+    assign mix_col_in_2d[0] = mix_col_in[31:24];
 
     //Mix One Column
     function [7:0] xtime;

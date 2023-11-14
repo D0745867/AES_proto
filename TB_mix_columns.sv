@@ -3,7 +3,7 @@
 class MixCols;
     bit [8*4 - 1 : 0] mix_col_1d;
     task generator();
-        mix_col_1d = {8'd241, 8'd227, 8'd199, 8'd143};
+        mix_col_1d = {8'd143, 8'd199, 8'd227, 8'd241};
     endtask
 endclass
 

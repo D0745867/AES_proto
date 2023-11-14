@@ -29,8 +29,28 @@ reg [3:0] cnt;
 // assign add_rk_o = state ^ round_key_o;
 // Key Expansion
 key_expansion ke_dut(.round_key_o(round_key_o), .key_in(master_key), .round(round), .cnt(cnt), .rst_n(rst_n), .clk(clk));
-// SubBytes
+// SubBytes input: 8bits, output: 8bits
+wire [7:0] subBytes_i;
+wire [7:0] subBytes_o;
+
+// Select part to replace with subBytes
+assign subBytes_i = state[ (cnt + 1)* 7 +:8 ];
+
 SubBytes dut_subBytes(.byte_o(subBytes_o), .byte_in(subBytes_i));
+
+// Shift Rows
+wire [ 4*4*8 - 1 : 0] sr_out;
+wire [ 4*4*8 - 1 : 0] sr_in;
+
+assign sr_in = state;
+shift_rows sr_dut(.shift_rows_o(sr_out), .shift_rows_in(sr_in));
+
+// Mix Columns
+wire [ 4*8 -1 : 0] mc_out;
+wire [ 4*8 -1 : 0] mc_in;
+
+assign mc_in = state[(128 - 32 * cnt) - 1 +: 32]; 
+mix_columns mc_dut(.mix_col_o(mc_out), .mix_col_in(mc_in));
 
 // FSM next
 always @(*) begin
@@ -58,7 +78,8 @@ always @(*) begin
             else next_state = AddRoundKey;
         end
         MixColumns: begin
-            next_state = AddRoundKey;
+            if (cnt != 4'd3) next_state = MixColumns;  
+            else next_state = AddRoundKey;
         end
         default: next_state = IDLE; 
     endcase
@@ -98,6 +119,15 @@ always @(posedge clk or negedge rst_n) begin
                     state <= state ^ round_key_o;
                 end
             end 
+            SubBytes : begin
+                state[ (cnt + 1)* 7 +:8 ] <= subBytes_o;
+            end
+            ShiftRows : begin
+                state <= sr_out;
+            end
+            MixColumns: begin
+                state[(128 - 32 * cnt) - 1 +: 32] <= mc_out;
+            end
             default: begin
                 state <= state;
             end
@@ -105,6 +135,6 @@ always @(posedge clk or negedge rst_n) begin
     end
 end
 
+// TODO: cnt
 
-    
 endmodule

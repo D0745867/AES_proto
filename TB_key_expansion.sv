@@ -27,10 +27,11 @@ class driver;
         //             , 8'hAC, 8'hC1, 8'h07, 8'hBD };
         for (i=0 ; i < 11 ; i = i + 1) begin
             for (j = 0 ; j < 6; j = j + 1) begin
-                ke.round <= i;
-                ke.cnt <= j;
+                ke.round <= #1 i;
+                ke.cnt <=  #1 j;
                 #10;
             end
+            $display("%0h\n", ke.round_key_o);
         end
         $finish();
     endtask
