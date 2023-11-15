@@ -3,9 +3,9 @@
 
 // TODO: Add bits lenth.
 module AES_128 (
-    output ciphertext,
+    output[ 4*4*8 - 1 : 0 ] ciphertext,
     input [ 4*4*8 - 1 : 0 ] plaintext,
-    input [ 0 : 4*4*8 - 1 ]master_key,
+    input [ 0 : 4*4*8 - 1 ] master_key,
     input clk,
     input rst_n
 );
