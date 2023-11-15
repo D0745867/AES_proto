@@ -95,18 +95,6 @@ always @(posedge clk or negedge rst_n) begin
     end
 end
 
-// Round Counter
-always @(posedge clk or negedge rst_n) begin
-    if (~rst_n) begin
-        round <= 4'd0;
-    end
-    else begin
-        if(current_state == AddRoundKey) begin
-            round <= round + 4'd1;
-        end
-    end
-end
-
 // State Matrix
 always @(posedge clk or negedge rst_n) begin
     if (~rst_n) begin
@@ -135,6 +123,35 @@ always @(posedge clk or negedge rst_n) begin
     end
 end
 
-// TODO: cnt
+// Counter
+always @(posedge clk or negedge rst_n) begin
+    if (~rst_n) begin
+        cnt <= 4'd0;
+    end
+    else begin
+        if(current_state == AddRoundKey || current_state == SubBytes || current_state == MixColumns) begin
+            if( next_state != current_state) begin
+                cnt <= 4'd0;
+            end
+            else begin
+                cnt <= cnt + 4'd1;
+            end
+        end
+    end
+end
+
+// Round Counter
+always @(posedge clk or negedge rst_n) begin
+    if (~rst_n) begin
+        round <= 4'd0;
+    end
+    else begin
+        if(current_state == AddRoundKey) begin
+            round <= round + 4'd1;
+        end
+    end
+end
+
+
 
 endmodule
