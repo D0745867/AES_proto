@@ -2,38 +2,27 @@
 
 interface aes_inter;
 
-    logic [ 4*4*8 - 1 : 0 ] ciphertext,
-    logic [ 4*4*8 - 1 : 0 ] plaintext,
-    logic [ 0 : 4*4*8 - 1 ] master_key,
+    logic [ 4*4*8 - 1 : 0 ] ciphertext;
+    logic done;
+    logic [ 4*4*8 - 1 : 0 ] plaintext;
+    logic [ 0 : 4*4*8 - 1 ] master_key;
     logic rst_n;
     logic clk;
 
     // output 是輸出給DUT
     modport DRV (
         output plaintext, master_key, rst_n, clk,
-        input ciphertext
+        input ciphertext, done
     );
 
 endinterface //aes_inter
 
 // 這邊只要處理plaintext輸入 & Master Key
-class AES;
+class driver;
     virtual aes_inter.DRV aes;
     int i, j;
     task run();
-        // Setting aesy
-        // aes.aesy_in = { 8'h3C, 8'hA1, 8'h0B, 8'h21
-        //             , 8'h57, 8'hF0, 8'h19, 8'h16
-        //             , 8'h90, 8'h2E, 8'h13, 8'h80
-        //             , 8'hAC, 8'hC1, 8'h07, 8'hBD };
-        for (i=0 ; i < 11 ; i = i + 1) begin
-            for (j = 0 ; j < 6; j = j + 1) begin
-                aes.round <= #1 i;
-                aes.cnt <=  #1 j;
-                #10;
-            end
-            $display("%0h\n", aes.round_aesy_o);
-        end
+        wait(aes.done == 1);
         $finish();
     endtask
 
@@ -41,26 +30,24 @@ endclass
 
 module TB_aes;
 
-    // 實例化一個interface
+    // New aes
     aes_inter aes();
 
     // 實例化一個driver
     driver drv;
 
-    aes aes_dut(aes.round_aesy_o, aes.aesy_in, aes.round, aes.cnt, aes.rst_n, aes.clk);
+    AES_128 aes_dut(aes.ciphertext, aes.done, aes.plaintext, aes.master_key, aes.clk, aes.rst_n);
 
     event rst_n_reset;
 
     initial begin
-        // Setting aesy
-        aes.aesy_in = { 8'h3C, 8'hA1, 8'h0B, 8'h21
+        // Setting Master Key
+        aes.master_key = { 8'h3C, 8'hA1, 8'h0B, 8'h21
                     , 8'h57, 8'hF0, 8'h19, 8'h16
                     , 8'h90, 8'h2E, 8'h13, 8'h80
                     , 8'hAC, 8'hC1, 8'h07, 8'hBD };
-        // aes.aesy_in = { 8'hBD, 8'h07, 8'hC1, 8'hAC
-        //     , 8'h80, 8'h13, 8'h2E, 8'h90
-        //     , 8'h16, 8'h19, 8'hF0, 8'h57
-        //     , 8'h21, 8'h0B, 8'hA1, 8'h3C };
+        // Setting plaintext
+        aes.plaintext = 128'hEA5BDD583B6BAFB11A80D2F481ADC4CE;
     end
 
     initial begin
