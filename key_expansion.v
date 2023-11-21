@@ -4,12 +4,14 @@
 // Key_in only needed when first round
 module key_expansion (
     output [ 4*4*8 - 1 : 0 ]round_key_o,
-    input [ 0 : 4*4*8 - 1 ] key_in,
+    input [2:0] current_state,
+    input [ 4*4*8 - 1 : 0 ] key_in,
     input [3:0] round,
-    input [2:0] cnt,
+    input [3:0] cnt,
     input rst_n,
     input clk
 );
+localparam AddRoundKey = 3'd1;
 
 // RC value
 wire [7:0] rc_table [0:9]; 
@@ -63,18 +65,25 @@ end
 // w_matrix
 always @(posedge clk or negedge rst_n) begin
     if( !rst_n ) begin
-        w_matrix[0] <= key_in[0:31];
-        w_matrix[1] <= key_in[32:63];
-        w_matrix[2] <= key_in[64:95];
-        w_matrix[3] <= key_in[96:127];
+        // w_matrix[0] <= key_in[0:31];
+        // w_matrix[1] <= key_in[32:63];
+        // w_matrix[2] <= key_in[64:95];
+        // w_matrix[3] <= key_in[96:127];
+
+        w_matrix[0] <= key_in[127:96];
+        w_matrix[1] <= key_in[95:64];
+        w_matrix[2] <= key_in[63:32];
+        w_matrix[3] <= key_in[31:0];
     end
     else begin
-        // Write Back to the w_matrix (final XOR)
-        if(cnt == 3'd5) begin
-            w_matrix[0] <= w_matrix_cur[0];
-            w_matrix[1] <= w_matrix_cur[1];
-            w_matrix[2] <= w_matrix_cur[2];
-            w_matrix[3] <= w_matrix_cur[3];
+        if(current_state == AddRoundKey) begin
+            // Write Back to the w_matrix (final XOR)
+            if(cnt == 4'd5) begin
+                w_matrix[0] <= w_matrix_cur[0];
+                w_matrix[1] <= w_matrix_cur[1];
+                w_matrix[2] <= w_matrix_cur[2];
+                w_matrix[3] <= w_matrix_cur[3];
+            end
         end
     end
 end
@@ -88,12 +97,14 @@ always @(posedge clk or negedge rst_n) begin
         w_g_sub[3] <= 8'd0;
     end
     else begin
-        if(cnt >= 3'd0 && cnt <= 3'd3) begin
-            w_g_sub[cnt] <= subBytes_o;
+        if(current_state == AddRoundKey) begin
+            if(cnt >= 4'd0 && cnt <= 4'd3) begin
+                w_g_sub[cnt] <= subBytes_o;
+            end
+            else if(cnt == 4'd4) begin
+                w_g_sub[3] <= w_g_sub[3] ^ rc_table[round - 4'd1];
+            end  
         end
-        else if(cnt == 3'd4) begin
-            w_g_sub[3] <= w_g_sub[3] ^ rc_table[round];
-        end  
     end
 end
 

@@ -42,12 +42,9 @@ module TB_aes;
 
     initial begin
         // Setting Master Key
-        aes.master_key = { 8'h3C, 8'hA1, 8'h0B, 8'h21
-                    , 8'h57, 8'hF0, 8'h19, 8'h16
-                    , 8'h90, 8'h2E, 8'h13, 8'h80
-                    , 8'hAC, 8'hC1, 8'h07, 8'hBD };
+        aes.master_key =  128'h2B7E151628AED2A6ABF7158809CF4F3C;
         // Setting plaintext
-        aes.plaintext = 128'hEA5BDD583B6BAFB11A80D2F481ADC4CE;
+        aes.plaintext = 128'h3243F6A8885A308D313198A2E0370734;
     end
 
     initial begin
