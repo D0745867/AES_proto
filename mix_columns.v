@@ -27,9 +27,9 @@ module mix_columns (
     wire [7:0] t = mix_col_in_2d[0] ^ mix_col_in_2d[1] ^ mix_col_in_2d[2] ^ mix_col_in_2d[3];
     wire [7:0] u = mix_col_in_2d[0];
 
-    assign mix_col_o[7:0] = mix_col_in_2d[0] ^ t ^ xtime(mix_col_in_2d[0] ^ mix_col_in_2d[1]); 
-    assign mix_col_o[15:8] = mix_col_in_2d[1] ^ t ^ xtime(mix_col_in_2d[1] ^ mix_col_in_2d[2]);
-    assign mix_col_o[23:16] = mix_col_in_2d[2] ^ t ^ xtime(mix_col_in_2d[2] ^ mix_col_in_2d[3]);
-    assign mix_col_o[31:24] = mix_col_in_2d[3] ^ t ^ xtime(mix_col_in_2d[3] ^ u);
+    assign mix_col_o[31:24] = mix_col_in_2d[0] ^ t ^ xtime(mix_col_in_2d[0] ^ mix_col_in_2d[1]); 
+    assign mix_col_o[23:16] = mix_col_in_2d[1] ^ t ^ xtime(mix_col_in_2d[1] ^ mix_col_in_2d[2]);
+    assign mix_col_o[15:8] = mix_col_in_2d[2] ^ t ^ xtime(mix_col_in_2d[2] ^ mix_col_in_2d[3]);
+    assign mix_col_o[7:0] = mix_col_in_2d[3] ^ t ^ xtime(mix_col_in_2d[3] ^ u);
     
 endmodule

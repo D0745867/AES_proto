@@ -37,7 +37,9 @@ wire [7:0] subBytes_i;
 wire [7:0] subBytes_o;
 
 // Select part to replace with subBytes
-assign subBytes_i = state[ (cnt + 1)* 7 +:8 ];
+assign subBytes_i = state[ ((cnt + 1)* 8 - 1) -:8 ];
+// assign subBytes_i = state[ 7:0 ];
+
 
 SubBytes dut_subBytes(.byte_o(subBytes_o), .byte_in(subBytes_i));
 
@@ -114,12 +116,12 @@ always @(posedge clk or negedge rst_n) begin
     else begin
         case (current_state)
             AddRoundKey : begin
-                if(cnt == 4'd6) begin
+                if(cnt == 4'd6 || round == 4'd0) begin
                     state <= state ^ round_key_o;
                 end
             end 
             SubBytes : begin
-                state[ (cnt + 1)* 7 -:8 ] <= subBytes_o;
+                state[ ((cnt + 1)* 8 - 1) -:8 ] <= subBytes_o;
             end
             ShiftRows : begin
                 state <= sr_out;
