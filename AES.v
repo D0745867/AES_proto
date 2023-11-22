@@ -84,7 +84,7 @@ always @(*) begin
             end
         end
         ShiftRows: begin
-            if (round != 4'd11) next_state = MixColumns;
+            if (round != 4'd10) next_state = MixColumns;
             else next_state = AddRoundKey;
         end
         MixColumns: begin
@@ -118,6 +118,7 @@ always @(posedge clk or negedge rst_n) begin
             AddRoundKey : begin
                 if(cnt == 4'd6 || round == 4'd0) begin
                     state <= state ^ round_key_o;
+                    #5 $display("%d %0h\n",round-1 , state);
                 end
             end 
             SubBytes : begin

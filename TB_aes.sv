@@ -23,6 +23,7 @@ class driver;
     int i, j;
     task run();
         wait(aes.done == 1);
+        #10;
         $finish();
     endtask
 
