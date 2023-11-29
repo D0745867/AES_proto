@@ -6,6 +6,7 @@ module SubBytes (
 );
     // Store default claulate elements
     wire [7:0] data_A[0:7];
+    wire [7:0] data_IA[0:7];
     wire [7:0] data_g2b[0:7];
     wire [7:0] data_b2g[0:7];
 
@@ -34,6 +35,16 @@ module SubBytes (
     assign data_A[5] = 8'b01111100;
     assign data_A[6] = 8'b00111110;
     assign data_A[7] = 8'b00011111;
+
+    // Data inv_A matrix initial value
+    assign data_IA[0] = 8'b00100101;
+    assign data_IA[1] = 8'b10010010;
+    assign data_IA[2] = 8'b01001001;
+    assign data_IA[3] = 8'b10100100;
+    assign data_IA[4] = 8'b01010010;
+    assign data_IA[5] = 8'b00101001;
+    assign data_IA[6] = 8'b10010100;
+    assign data_IA[7] = 8'b01001010;
 
     // Data g2b matrix initial value
     assign data_g2b[0] = 8'b10011000;
