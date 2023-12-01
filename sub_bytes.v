@@ -11,12 +11,6 @@ module SubBytes (
     wire [7:0] data_g2b[0:7];
     wire [7:0] data_b2g[0:7];
 
-    // Store
-    reg [7:0] g2b;
-    reg [7:0] inv;
-    reg [7:0] b2g;
-    reg [7:0] sub_result;
-
     // Convert matrix dimention to pass it between module ports
     wire [8*8 - 1:0] data_A_1d = { data_A[0], data_A[1], data_A[2], data_A[3]
     , data_A[4], data_A[5], data_A[6], data_A[7]};
@@ -70,9 +64,12 @@ module SubBytes (
     assign data_b2g[6] = 8'b11011110;
     assign data_b2g[7] = 8'b01100000;
 
+    // Store
+    reg [7:0] g2b, b2g, inv, inv_AT, inv_in, inv_o, at_o;
+
     // TODO: Wire Define, EX:at_o, inv_o.
     // 1. Inv_Affine_Transform
-    G256_new_basis dut_IAT (.g256_nb_o(inv_AT), .x(byte_in), .b(data_IA_1d))
+    G256_new_basis dut_IAT (.g256_nb_o(inv_AT), .x(byte_in), .b(data_IA_1d));
     assign inv_in = (inv_en == 1'b1) ? inv_AT ^ 8'h05 : byte_in;
 
     // 2. Inverse_elements
