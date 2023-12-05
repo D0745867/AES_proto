@@ -33,8 +33,9 @@ module TB_shift_rows;
 
     logic [8*4*4 - 1:0] sr_in;
     logic [8*4*4 - 1:0] sr_out;
+    logic inv_en;
 
-    shift_rows sr_dut(.shift_rows_o(sr_out), .shift_rows_in(sr_in));
+    shift_rows sr_dut(.shift_rows_o(sr_out), .shift_rows_in(sr_in), .inv_en(inv_en));
 
     initial begin
         ShiftRows sr;
@@ -43,6 +44,7 @@ module TB_shift_rows;
         
         #5;
         sr_in = sr.shift_rows_1d;
+        inv_en = 1'b0;
         #5;
         $finish();
     end

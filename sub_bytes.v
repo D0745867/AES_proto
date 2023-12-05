@@ -67,7 +67,7 @@ module SubBytes (
     // Store
     reg [7:0] g2b, b2g, inv, inv_AT, inv_in, inv_o, at_o;
 
-    // TODO: Wire Define, EX:at_o, inv_o.
+    // inv_en -> 1'b1 Dec, 1'b0 Enc.
     // 1. Inv_Affine_Transform
     G256_new_basis dut_IAT (.g256_nb_o(inv_AT), .x(byte_in), .b(data_IA_1d));
     assign inv_in = (inv_en == 1'b1) ? inv_AT ^ 8'h05 : byte_in;

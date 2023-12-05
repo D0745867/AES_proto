@@ -29,17 +29,17 @@ module tb_G4_mul;
     logic [7:0] x8, y8;
     logic [7:0] subBytes_o;
     logic [7:0] subBytes_i;
+    logic inv_en;
     int i = 0;
     int j = 0;
     int statis = 0;
-
     
     G4_mul dut_g4m (.g4mul_o(g4m_o), .x(x1), .y(y1));
     G4_mul_N dut_g4mn (.g4mul_N_o(g4mn_o), .x(x1));
     G16_mul dut_g16m (.g16_mul_o(g16m_o), .x(x4), .y(y4));
     // G256_new_basis b 有錯
     G256_new_basis dut_g256(.g256_nb_o(g256inv_o), .x(x8), .b(y8));
-    SubBytes dut_subBytes(.byte_o(subBytes_o), .byte_in(subBytes_i));
+    SubBytes dut_subBytes(.byte_o(subBytes_o), .byte_in(subBytes_i), .inv_en(inv_en));
     `ifdef G4_mul
     initial begin
         G4_g = new();
@@ -91,6 +91,8 @@ module tb_G4_mul;
     end
     `elsif SBOX
     initial begin
+        inv_en = 1'b1;
+        // inv_en = 1'b1;
         for(i=0; i< 256 ; i++) begin
             subBytes_i = i;
             #5
