@@ -46,6 +46,8 @@ module TB_shift_rows;
         sr_in = sr.shift_rows_1d;
         inv_en = 1'b0;
         #5;
+        inv_en = 1'b1;
+        #5;
         $finish();
     end
 
