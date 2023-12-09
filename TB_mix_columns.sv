@@ -13,6 +13,7 @@ module TB_mix_cols;
 
     logic [8*4 - 1:0] mc_in;
     logic [8*4 - 1:0] mc_out;
+    logic inv_en;
 
     logic [7:0] i1;
     logic [7:0] i2;
@@ -24,13 +25,14 @@ module TB_mix_cols;
     logic [7:0] A3;
     logic [7:0] A4;
 
-    mix_columns mc_dut(.mix_col_o(mc_out), .mix_col_in(mc_in));
+    mix_columns mc_dut(.mix_col_o(mc_out), .mix_col_in(mc_in), .inv_en(inv_en));
 
     initial begin
         MixCols mc;
         mc = new();
         mc.generator();
         mc_in = mc.mix_col_1d;
+        inv_en = 1'b0;
         #5;
         i4 = mc_in[31:24];
         i3 = mc_in[23:16];
@@ -45,7 +47,7 @@ module TB_mix_cols;
     end
 
     initial begin
-        $fsdbDumpfile("Mix_Cols.fsdb");
+        $fsdbDumpfile("Mix_Cols_INV.fsdb");
         $fsdbDumpvars;
         $fsdbDumpMDA();
     end
