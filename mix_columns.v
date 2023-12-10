@@ -44,7 +44,7 @@ module mix_columns (
     always @(*) begin
         // MixCol
         if(inv_en == 1'b0) begin
-            // Generate inputs pass to Xtimes.
+            // Generate inputs pass to Xtimes. 1~4
             xor_A1_in = mix_col_in_2d[0];
             xor_B1_in = mix_col_in_2d[1];
             xor_A2_in = mix_col_in_2d[1];
@@ -53,15 +53,15 @@ module mix_columns (
             xor_B3_in = mix_col_in_2d[3];
             xor_A4_in = mix_col_in_2d[3];
             xor_B4_in = u;
-            // t 
+            // t 5~7
             xor_A5_in = mix_col_in_2d[0];
             xor_B5_in = mix_col_in_2d[1];
             xor_A6_in = xor5_out;
             xor_B6_in = mix_col_in_2d[2];
             xor_A7_in = xor6_out;
             xor_B7_in = mix_col_in_2d[3];
-            // Final xor 
-             
+            // Final xor 8~15
+            
         end
         // INV_Mixcol
         else begin
@@ -71,22 +71,6 @@ module mix_columns (
             xor_A4_in = ;
         end
     end
-
-    // always @(*) begin
-    //     if(inv_en == 1'b0) begin
-    //         x1_in = mix_col_in_2d[0] ^ mix_col_in_2d[1]; 
-    //         x2_in = mix_col_in_2d[1] ^ mix_col_in_2d[2];
-    //         x3_in = mix_col_in_2d[2] ^ mix_col_in_2d[3];
-    //         x4_in = mix_col_in_2d[3] ^ u; 
-    //     end
-    //     // This is for inv_mode needs to be modified
-    //     else begin
-    //         x1_in = mix_col_in_2d[0] ^ mix_col_in_2d[1]; 
-    //         x2_in = mix_col_in_2d[1] ^ mix_col_in_2d[2];
-    //         x3_in = mix_col_in_2d[2] ^ mix_col_in_2d[3];
-    //         x4_in = mix_col_in_2d[3] ^ u;
-    //     end
-    // end
 
     // Xtime Structrue 
     xtime xtime1(x1_out, x1_in);
@@ -114,10 +98,11 @@ module mix_columns (
     xor xor2(xor2_out, xor_A2_in, xor_B2_in);  
     xor xor3(xor3_out, xor_A3_in, xor_B3_in);
     xor xor4(xor4_out, xor_A4_in, xor_B4_in);
-    // This two gates are f
+    // This two gates are for t.
     xor xor5(xor5_out, xor_A5_in, xor_B5_in);  
     xor xor6(xor6_out, xor_A6_in, xor_B6_in);
     xor xor7(xor7_out, xor_A7_in, xor_B7_in);
+    // 
     xor xor8(xor8_out, xor_A8_in, xor_B8_in);
     xor xor9(xor9_out, xor_A9_in, xor_B9_in);  
     xor xor10(xor10_out, xor_A10_in, xor_B10_in);
