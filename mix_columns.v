@@ -22,6 +22,20 @@ module mix_columns (
 
     reg [7:0] mix_col_in_2d [0:3];
 
+        
+    // XOR input A
+    reg [7:0] xor_A1_in, xor_A2_in, xor_A3_in, xor_A4_in, xor_A5_in, xor_A6_in,  
+    xor_A7_in, xor_A8_in, xor_A9_in, xor_A10_in, xor_A11_in, xor_A12_in, xor_A13_in, xor_A14_in, xor_A15_in;
+
+    // XOR input B
+    reg [7:0] xor_B1_in, xor_B2_in, xor_B3_in, xor_B4_in, xor_B5_in, xor_B6_in,  
+    xor_B7_in, xor_B8_in, xor_B9_in, xor_B10_in, xor_B11_in, xor_B12_in, xor_B13_in, xor_B14_in, xor_B15_in;
+
+    // XOR output C
+    wire [7:0] xor1_out, xor2_out, xor3_out, xor4_out, xor5_out, xor6_out,
+    xor7_out, xor8_out, xor9_out, xor10_out, xor11_out, xor12_out, xor13_out, xor14_out, xor15_out;
+    
+
     // Matrix Convert
     assign mix_col_in_2d[3] = mix_col_in[7:0];
     assign mix_col_in_2d[2] = mix_col_in[15:8];
@@ -29,7 +43,7 @@ module mix_columns (
     assign mix_col_in_2d[0] = mix_col_in[31:24];
     
     // wire [7:0] t = mix_col_in_2d[0] ^ mix_col_in_2d[1] ^ mix_col_in_2d[2] ^ mix_col_in_2d[3];
-    wire [7:0] t = 
+    wire [7:0] t = xor7_out;
     wire [7:0] u = mix_col_in_2d[0];
 
     reg [7:0] x1_in, x2_in, x3_in, x4_in;
@@ -53,6 +67,7 @@ module mix_columns (
             xor_B3_in = mix_col_in_2d[3];
             xor_A4_in = mix_col_in_2d[3];
             xor_B4_in = u;
+            
             // t 5~7
             xor_A5_in = mix_col_in_2d[0];
             xor_B5_in = mix_col_in_2d[1];
@@ -60,15 +75,34 @@ module mix_columns (
             xor_B6_in = mix_col_in_2d[2];
             xor_A7_in = xor6_out;
             xor_B7_in = mix_col_in_2d[3];
-            // Final xor 8~15
+
+            // xor with xtime and t 8~11
+            xor_A8_in = xor1_out;
+            xor_B8_in = t;
+            xor_A9_in = xor2_out;
+            xor_B9_in = t;
+            xor_A10_in = xor3_out;
+            xor_B10_in = t;
+            xor_A11_in = xor4_out;
+            xor_B11_in = t;
+
+            // xor 12~15
+            xor_A12_in = xor8_out;
+            xor_B12_in = mix_col_in_2d[0];
+            xor_A13_in = xor9_out;
+            xor_B13_in = mix_col_in_2d[1];
+            xor_A14_in = xor10_out;
+            xor_B14_in = mix_col_in_2d[2];
+            xor_A15_in = xor11_out;
+            xor_B15_in = mix_col_in_2d[3];
             
         end
         // INV_Mixcol
         else begin
-            xor_A1_in = ;
-            xor_A2_in = ;
-            xor_A3_in = ;
-            xor_A4_in = ;
+            xor_A1_in = 8'b0;
+            xor_A2_in = 8'b0;
+            xor_A3_in = 8'b0;
+            xor_A4_in = 8'b0;
         end
     end
 
@@ -77,17 +111,6 @@ module mix_columns (
     xtime xtime2(x2_out, x2_in);
     xtime xtime3(x3_out, x3_in);
     xtime xtime4(x4_out, x4_in);
-
-    // XOR input A
-    reg [7:0] xor_A1_in, xor_A2_in, xor_A3_in, xor_A4_in, xor_A5_in, xor_A6_in,  
-    xor_A7_in, xor_A8_in, xor_A9_in, xor_A10_in, xor_A11_in, xor_A12_in;
-    // XOR input B
-    reg [7:0] xor_B1_in, xor_B2_in, xor_B3_in, xor_B4_in, xor_B5_in, xor_B6_in,  
-    xor_B7_in, xor_B8_in, xor_B9_in, xor_B10_in, xor_B11_in, xor_B12_in;
-
-    // XOR output C
-    wire [7:0] xor1_out, xor2_out, xor3_out, xor4_out, xor5_out, xor6_out,
-    xor7_out, xor8_out, xor9_out, xor10_out, xor11_out, xor12_out;
 
     // XOR Structure
     // xor xor1( C, A, B );	C = A ^ B
@@ -112,9 +135,9 @@ module mix_columns (
     xor xor14(xor14_out, xor_A14_in, xor_B14_in);
     xor xor15(xor15_out, xor_A15_in, xor_B15_in);
 
-    assign mix_col_o[31:24] = mix_col_in_2d[0] ^ t ^ x1_out; 
-    assign mix_col_o[23:16] = mix_col_in_2d[1] ^ t ^ x2_out;
-    assign mix_col_o[15:8] = mix_col_in_2d[2] ^ t ^ x3_out;
-    assign mix_col_o[7:0] = mix_col_in_2d[3] ^ t ^ x4_out;
+    assign mix_col_o[31:24] = xor12_out; 
+    assign mix_col_o[23:16] = xor13_out;
+    assign mix_col_o[15:8] = xor14_out;
+    assign mix_col_o[7:0] = xor15_out;
     
 endmodule
