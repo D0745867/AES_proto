@@ -14,6 +14,16 @@ module xtime (
     end
 endmodule
 
+module xor_8b (
+    output [7:0] xor_8b_o , 
+    input [7:0] xor_8b_inA,
+    input [7:0] xor_8b_inB
+);
+
+    assign xor_8b_o = xor_8b_inA ^ xor_8b_inB;
+
+endmodule
+
 module mix_columns (
     output [4*8 - 1 : 0] mix_col_o,
     input [4*8 - 1 : 0] mix_col_in,
@@ -77,13 +87,13 @@ module mix_columns (
             xor_B7_in = mix_col_in_2d[3];
 
             // xor with xtime and t 8~11
-            xor_A8_in = xor1_out;
+            xor_A8_in = x1_out;
             xor_B8_in = t;
-            xor_A9_in = xor2_out;
+            xor_A9_in = x2_out;
             xor_B9_in = t;
-            xor_A10_in = xor3_out;
+            xor_A10_in = x3_out;
             xor_B10_in = t;
-            xor_A11_in = xor4_out;
+            xor_A11_in = x4_out;
             xor_B11_in = t;
 
             // xor 12~15
@@ -117,23 +127,23 @@ module mix_columns (
     // 15 XOR gates
 
     // This four gates are for xtime func when Mixcol
-    xor xor1(xor1_out, xor_A1_in, xor_B1_in);
-    xor xor2(xor2_out, xor_A2_in, xor_B2_in);  
-    xor xor3(xor3_out, xor_A3_in, xor_B3_in);
-    xor xor4(xor4_out, xor_A4_in, xor_B4_in);
+    xor_8b xor1(xor1_out, xor_A1_in, xor_B1_in);
+    xor_8b xor2(xor2_out, xor_A2_in, xor_B2_in);  
+    xor_8b xor3(xor3_out, xor_A3_in, xor_B3_in);
+    xor_8b xor4(xor4_out, xor_A4_in, xor_B4_in);
     // This two gates are for t.
-    xor xor5(xor5_out, xor_A5_in, xor_B5_in);  
-    xor xor6(xor6_out, xor_A6_in, xor_B6_in);
-    xor xor7(xor7_out, xor_A7_in, xor_B7_in);
+    xor_8b xor5(xor5_out, xor_A5_in, xor_B5_in);  
+    xor_8b xor6(xor6_out, xor_A6_in, xor_B6_in);
+    xor_8b xor7(xor7_out, xor_A7_in, xor_B7_in);
     // 
-    xor xor8(xor8_out, xor_A8_in, xor_B8_in);
-    xor xor9(xor9_out, xor_A9_in, xor_B9_in);  
-    xor xor10(xor10_out, xor_A10_in, xor_B10_in);
-    xor xor11(xor11_out, xor_A11_in, xor_B11_in);  
-    xor xor12(xor12_out, xor_A12_in, xor_B12_in);
-    xor xor13(xor13_out, xor_A13_in, xor_B13_in);
-    xor xor14(xor14_out, xor_A14_in, xor_B14_in);
-    xor xor15(xor15_out, xor_A15_in, xor_B15_in);
+    xor_8b xor8(xor8_out, xor_A8_in, xor_B8_in);
+    xor_8b xor9(xor9_out, xor_A9_in, xor_B9_in);  
+    xor_8b xor10(xor10_out, xor_A10_in, xor_B10_in);
+    xor_8b xor11(xor11_out, xor_A11_in, xor_B11_in);  
+    xor_8b xor12(xor12_out, xor_A12_in, xor_B12_in);
+    xor_8b xor13(xor13_out, xor_A13_in, xor_B13_in);
+    xor_8b xor14(xor14_out, xor_A14_in, xor_B14_in);
+    xor_8b xor15(xor15_out, xor_A15_in, xor_B15_in);
 
     assign mix_col_o[31:24] = xor12_out; 
     assign mix_col_o[23:16] = xor13_out;
