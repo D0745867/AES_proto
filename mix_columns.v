@@ -53,21 +53,30 @@ module mix_columns (
     assign mix_col_in_2d[0] = mix_col_in[31:24];
     
     // wire [7:0] t = mix_col_in_2d[0] ^ mix_col_in_2d[1] ^ mix_col_in_2d[2] ^ mix_col_in_2d[3];
-    wire [7:0] t = xor7_out;
-    wire [7:0] u = mix_col_in_2d[0];
+    wire [7:0] t = (inv_en == 1'b0) ? xor7_out : x4_out; // As known as v in Python
+    wire [7:0] u = (inv_en == 1'b0) ? mix_col_in_2d[0] : x3_out;
 
     reg [7:0] x1_in, x2_in, x3_in, x4_in;
     wire [7:0] x1_out, x2_out, x3_out, x4_out;
 
-    assign x1_in = xor1_out;
-    assign x2_in = xor2_out;
-    assign x3_in = xor3_out;
-    assign x4_in = xor4_out;
-
-    // TODO: Add two wire of xor1_in always block
     always @(*) begin
-        // MixCol
-        if(inv_en == 1'b0) begin
+        if (inv_en == 1'b0) begin
+            x1_in = xor1_out;
+            x2_in = xor2_out;
+            x3_in = xor3_out;
+            x4_in = xor4_out;
+        end
+        else begin
+            x1_in = xor1_out;
+            x2_in = xor2_out;
+            x3_in = x1_out;
+            x4_in = x2_out;
+        end
+    end
+
+    always @(*) begin
+        // Single MixCol - 15 xor gates
+        if (inv_en == 1'b0) begin
             // Generate inputs pass to Xtimes. 1~4
             xor_A1_in = mix_col_in_2d[0];
             xor_B1_in = mix_col_in_2d[1];
@@ -107,12 +116,47 @@ module mix_columns (
             xor_B15_in = mix_col_in_2d[3];
             
         end
-        // INV_Mixcol
+        // Single INV_Mixcol - 6 xor gates
         else begin
-            xor_A1_in = 8'b0;
-            xor_A2_in = 8'b0;
-            xor_A3_in = 8'b0;
-            xor_A4_in = 8'b0;
+            // First Two 1~2
+            xor_A1_in = mix_col_in_2d[0];
+            xor_B1_in = mix_col_in_2d[2];
+            xor_A2_in = mix_col_in_2d[1];
+            xor_B2_in = mix_col_in_2d[3];
+
+            // Last Four 3~6
+            xor_A3_in = mix_col_in_2d[0];
+            xor_B3_in = u;
+            xor_A4_in = mix_col_in_2d[1];
+            xor_B4_in = t;
+            xor_A5_in = mix_col_in_2d[2];
+            xor_B5_in = u;
+            xor_A6_in = mix_col_in_2d[3];
+            xor_B6_in = t;
+
+            // Useless
+            xor_A7_in = 8'b0;
+            xor_B7_in = 8'b0;
+            xor_A8_in = 8'b0;
+            xor_B8_in = 8'b0;
+
+            xor_A9_in = 8'b0; 
+            xor_B9_in = 8'b0;
+            xor_A10_in = 8'b0;
+            xor_B10_in = 8'b0;
+
+            xor_A11_in = 8'b0;
+            xor_B11_in = 8'b0;  
+            xor_A12_in = 8'b0;
+            xor_B12_in = 8'b0;
+                
+            xor_A13_in = 8'b0;
+            xor_B13_in = 8'b0;  
+            xor_A14_in = 8'b0; 
+            xor_B14_in = 8'b0;
+
+            xor_A15_in = 8'b0;
+            xor_B15_in = 8'b0;  
         end
     end
 
