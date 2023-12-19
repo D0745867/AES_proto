@@ -45,6 +45,9 @@ module mix_columns (
     wire [7:0] xor1_out, xor2_out, xor3_out, xor4_out, xor5_out, xor6_out,
     xor7_out, xor8_out, xor9_out, xor10_out, xor11_out, xor12_out, xor13_out, xor14_out, xor15_out;
     
+    // Xtime I/O
+    reg [7:0] x1_in, x2_in, x3_in, x4_in;
+    wire [7:0] x1_out, x2_out, x3_out, x4_out;
 
     // Matrix Convert
     assign mix_col_in_2d[3] = mix_col_in[7:0];
@@ -55,9 +58,6 @@ module mix_columns (
     // wire [7:0] t = mix_col_in_2d[0] ^ mix_col_in_2d[1] ^ mix_col_in_2d[2] ^ mix_col_in_2d[3];
     wire [7:0] t = (inv_en == 1'b0) ? xor7_out : x4_out; // As known as v in Python
     wire [7:0] u = (inv_en == 1'b0) ? mix_col_in_2d[0] : x3_out;
-
-    reg [7:0] x1_in, x2_in, x3_in, x4_in;
-    wire [7:0] x1_out, x2_out, x3_out, x4_out;
 
     always @(*) begin
         if (inv_en == 1'b0) begin
@@ -124,39 +124,35 @@ module mix_columns (
             xor_A2_in = mix_col_in_2d[1];
             xor_B2_in = mix_col_in_2d[3];
 
-            // Last Four 3~6
-            xor_A3_in = mix_col_in_2d[0];
-            xor_B3_in = u;
-            xor_A4_in = mix_col_in_2d[1];
-            xor_B4_in = t;
-            xor_A5_in = mix_col_in_2d[2];
-            xor_B5_in = u;
-            xor_A6_in = mix_col_in_2d[3];
-            xor_B6_in = t;
+            // Last Four 12~15
+            xor_A12_in = mix_col_in_2d[0];
+            xor_B12_in = u;
+            xor_A13_in = mix_col_in_2d[1];
+            xor_B13_in = t;
+            xor_A14_in = mix_col_in_2d[2];
+            xor_B14_in = u;
+            xor_A15_in = mix_col_in_2d[3];
+            xor_B15_in = t;
 
             // Useless
+            xor_A3_in = 8'b0;
+            xor_B3_in = 8'b0;
+            xor_A4_in = 8'b0;
+            xor_B4_in = 8'b0;
+            xor_A5_in = 8'b0;
+            xor_B5_in = 8'b0;
+            xor_A6_in = 8'b0;
+            xor_B6_in = 8'b0;
             xor_A7_in = 8'b0;
             xor_B7_in = 8'b0;
             xor_A8_in = 8'b0;
             xor_B8_in = 8'b0;
-
             xor_A9_in = 8'b0; 
             xor_B9_in = 8'b0;
             xor_A10_in = 8'b0;
             xor_B10_in = 8'b0;
-
             xor_A11_in = 8'b0;
             xor_B11_in = 8'b0;  
-            xor_A12_in = 8'b0;
-            xor_B12_in = 8'b0;
-                
-            xor_A13_in = 8'b0;
-            xor_B13_in = 8'b0;  
-            xor_A14_in = 8'b0; 
-            xor_B14_in = 8'b0;
-
-            xor_A15_in = 8'b0;
-            xor_B15_in = 8'b0;  
         end
     end
 
@@ -175,11 +171,11 @@ module mix_columns (
     xor_8b xor2(xor2_out, xor_A2_in, xor_B2_in);  
     xor_8b xor3(xor3_out, xor_A3_in, xor_B3_in);
     xor_8b xor4(xor4_out, xor_A4_in, xor_B4_in);
+    
     // This two gates are for t.
     xor_8b xor5(xor5_out, xor_A5_in, xor_B5_in);  
     xor_8b xor6(xor6_out, xor_A6_in, xor_B6_in);
     xor_8b xor7(xor7_out, xor_A7_in, xor_B7_in);
-    // 
     xor_8b xor8(xor8_out, xor_A8_in, xor_B8_in);
     xor_8b xor9(xor9_out, xor_A9_in, xor_B9_in);  
     xor_8b xor10(xor10_out, xor_A10_in, xor_B10_in);
@@ -189,7 +185,7 @@ module mix_columns (
     xor_8b xor14(xor14_out, xor_A14_in, xor_B14_in);
     xor_8b xor15(xor15_out, xor_A15_in, xor_B15_in);
 
-    assign mix_col_o[31:24] = xor12_out; 
+    assign mix_col_o[31:24] = xor12_out;
     assign mix_col_o[23:16] = xor13_out;
     assign mix_col_o[15:8] = xor14_out;
     assign mix_col_o[7:0] = xor15_out;
