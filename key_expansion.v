@@ -13,7 +13,7 @@ module key_expansion (
 );
 localparam AddRoundKey = 3'd1;
 
-// RC value
+// RC Table
 wire [7:0] rc_table [0:9]; 
 assign rc_table[0] = 8'h01;
 assign rc_table[1] = 8'h02;
@@ -65,11 +65,6 @@ end
 // w_matrix
 always @(posedge clk or negedge rst_n) begin
     if( !rst_n ) begin
-        // w_matrix[0] <= key_in[0:31];
-        // w_matrix[1] <= key_in[32:63];
-        // w_matrix[2] <= key_in[64:95];
-        // w_matrix[3] <= key_in[96:127];
-
         w_matrix[0] <= key_in[127:96];
         w_matrix[1] <= key_in[95:64];
         w_matrix[2] <= key_in[63:32];
