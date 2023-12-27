@@ -32,7 +32,6 @@ module mix_columns (
 
     reg [7:0] mix_col_in_2d [0:3];
 
-        
     // XOR input A
     reg [7:0] xor_A1_in, xor_A2_in, xor_A3_in, xor_A4_in, xor_A5_in, xor_A6_in,  
     xor_A7_in, xor_A8_in, xor_A9_in, xor_A10_in, xor_A11_in, xor_A12_in, xor_A13_in, xor_A14_in, xor_A15_in;
@@ -168,18 +167,18 @@ module mix_columns (
 
     // This four gates are for xtime func when Mixcol
     xor_8b xor1(xor1_out, xor_A1_in, xor_B1_in);
-    xor_8b xor2(xor2_out, xor_A2_in, xor_B2_in);  
+    xor_8b xor2(xor2_out, xor_A2_in, xor_B2_in);
     xor_8b xor3(xor3_out, xor_A3_in, xor_B3_in);
     xor_8b xor4(xor4_out, xor_A4_in, xor_B4_in);
     
     // This two gates are for t.
-    xor_8b xor5(xor5_out, xor_A5_in, xor_B5_in);  
+    xor_8b xor5(xor5_out, xor_A5_in, xor_B5_in);
     xor_8b xor6(xor6_out, xor_A6_in, xor_B6_in);
     xor_8b xor7(xor7_out, xor_A7_in, xor_B7_in);
     xor_8b xor8(xor8_out, xor_A8_in, xor_B8_in);
-    xor_8b xor9(xor9_out, xor_A9_in, xor_B9_in);  
+    xor_8b xor9(xor9_out, xor_A9_in, xor_B9_in);
     xor_8b xor10(xor10_out, xor_A10_in, xor_B10_in);
-    xor_8b xor11(xor11_out, xor_A11_in, xor_B11_in);  
+    xor_8b xor11(xor11_out, xor_A11_in, xor_B11_in);
     xor_8b xor12(xor12_out, xor_A12_in, xor_B12_in);
     xor_8b xor13(xor13_out, xor_A13_in, xor_B13_in);
     xor_8b xor14(xor14_out, xor_A14_in, xor_B14_in);

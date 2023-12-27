@@ -8,6 +8,7 @@ module key_expansion (
     input [ 4*4*8 - 1 : 0 ] key_in,
     input [3:0] round,
     input [3:0] cnt,
+    input inv_en,
     input rst_n,
     input clk
 );
@@ -34,24 +35,54 @@ wire [7:0] subBytes_i;
 reg [31:0] w_matrix [0:3];
 reg [7:0] w_rot [0:3];
 reg [7:0] w_g_sub [0:3];
-wire [7:0]w_g_temp[0:3];
+wire [7:0]w_g_in[0:3]; 
 // New Round Key
 reg [31:0] w_matrix_cur [0:3];
 
 assign subBytes_i = w_rot[cnt];
 SubBytes dut_subBytes(.byte_o(subBytes_o), .byte_in(subBytes_i));
 
-assign w_g_temp[0] = w_matrix[3][7:0];
-assign w_g_temp[1] = w_matrix[3][15:8];
-assign w_g_temp[2] = w_matrix[3][23:16];
-assign w_g_temp[3] = w_matrix[3][31:24];
+// w_g_in signals are condition with mux 
+// TODO: Decesie anothor condition results
+assign w_g_in[0] = (inv_en == 1'b0) ? w_matrix[3][7:0] : 8'b0;
+assign w_g_in[1] = (inv_en == 1'b0) ? w_matrix[3][15:8] : 8'b0;
+assign w_g_in[2] = (inv_en == 1'b0) ? w_matrix[3][23:16]: 8'b0;
+assign w_g_in[3] = (inv_en == 1'b0) ? w_matrix[3][31:24]: 8'b0;
+
+// 4 XORs
+wire [7:0] xor_A1_in, xor_A2_in, xor_A3_in, xor_A4_in
+         , xor_B1_in, xor_B2_in, xor_B3_in, xor_B4_in
+
+// Regular Signal
+assign xor_B1_in = w_matrix[1];
+assign xor_B2_in = w_matrix[2];
+assign xor_B3_in = w_matrix[3];
+
+// Chosen signal
+
+// xor_B4_in
+always @(*) begin
+    if (inv_en == 1'b0) begin
+        if(cnt <= 4'd4) begin
+            xor_B4_in = rc_table[round - 4'd1];
+        end else begin
+            xor_B4_in = w_matrix[0];
+        end
+    end
+end
+
+xor_8b xor1(xor1_out, xor_A1_in, xor_B1_in);
+xor_8b xor2(xor2_out, xor_A2_in, xor_B2_in);
+xor_8b xor3(xor3_out, xor_A3_in, xor_B3_in);
+// Option 
+xor_8b xor4(xor4_out, xor_A4_in, xor_B4_in);
 
 // Lest Shift - 1
 always @(*) begin
-    w_rot[0] = w_g_temp[3];
-    w_rot[1] = w_g_temp[0];
-    w_rot[2] = w_g_temp[1];
-    w_rot[3] = w_g_temp[2];
+    w_rot[0] = w_g_in[3];
+    w_rot[1] = w_g_in[0];
+    w_rot[2] = w_g_in[1];
+    w_rot[3] = w_g_in[2];
 end
 
 // w XOR in the last step
