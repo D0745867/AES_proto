@@ -1,5 +1,15 @@
 `timescale 1ns/1ns
 
+module xor_32b (
+    output [31:0] xor_32b_o , 
+    input [31:0] xor_32b_inA,
+    input [31:0] xor_32b_inB
+);
+
+    assign xor_32b_o = xor_32b_inA ^ xor_32b_inB;
+
+endmodule
+
 // Single round keygeneration
 // Key_in only needed when first round
 module key_expansion (
@@ -50,8 +60,11 @@ assign w_g_in[2] = (inv_en == 1'b0) ? w_matrix[3][23:16]: 8'b0;
 assign w_g_in[3] = (inv_en == 1'b0) ? w_matrix[3][31:24]: 8'b0;
 
 // 4 XORs
-wire [7:0] xor_A1_in, xor_A2_in, xor_A3_in, xor_A4_in
-         , xor_B1_in, xor_B2_in, xor_B3_in, xor_B4_in
+wire [31:0] xor_A1_in, xor_A2_in, xor_A3_in, xor_A4_in
+         , xor_B1_in, xor_B2_in, xor_B3_in, xor_B4_in;
+
+// XOR output C
+wire [31:0] xor1_out, xor2_out, xor3_out, xor4_out;
 
 // Regular Signal
 assign xor_B1_in = w_matrix[1];
@@ -60,22 +73,53 @@ assign xor_B3_in = w_matrix[3];
 
 // Chosen signal
 
+// xor_A4_in
+always @(*) begin
+    if (inv_en == 1'b0) begin
+        if(cnt <= 4'd4) begin
+            xor_A4_in = {w_g_sub[3], 24'b0};
+        end else begin
+            xor_A4_in = w_matrix[0];
+        end
+    end
+    // INV 1: W' 2: XOR
+    else begin
+        case (cnt)
+        // Use 32bits xor
+        4'd6: // Second
+            xor_A4_in = w_matrix[0];
+        default: // First
+            xor_A4_in = {w_g_sub[3], 24'b0};
+        endcase
+    end
+end
+
 // xor_B4_in
 always @(*) begin
     if (inv_en == 1'b0) begin
         if(cnt <= 4'd4) begin
-            xor_B4_in = rc_table[round - 4'd1];
+            xor_B4_in = {rc_table[round - 4'd1], 24'b0};
         end else begin
-            xor_B4_in = w_matrix[0];
+            xor_B4_in = {w_g_sub[3], w_g_sub[2], w_g_sub[1], w_g_sub[0]};
         end
+    end
+    // INV
+    else begin
+        case (cnt)
+        // Use 32bits xor
+        4'd6: // Second
+            xor_B4_in = {w_g_sub[3], w_g_sub[2], w_g_sub[1], w_g_sub[0]};
+        default: // First
+            xor_B4_in = {rc_table[round - 4'd1], 24'b0};
+        endcase
     end
 end
 
-xor_8b xor1(xor1_out, xor_A1_in, xor_B1_in);
-xor_8b xor2(xor2_out, xor_A2_in, xor_B2_in);
-xor_8b xor3(xor3_out, xor_A3_in, xor_B3_in);
+xor_32b xor1(xor1_out, xor_A1_in, xor_B1_in);
+xor_32b xor2(xor2_out, xor_A2_in, xor_B2_in);
+xor_32b xor3(xor3_out, xor_A3_in, xor_B3_in);
 // Option 
-xor_8b xor4(xor4_out, xor_A4_in, xor_B4_in);
+xor_32b xor4(xor4_out, xor_A4_in, xor_B4_in);
 
 // Lest Shift - 1
 always @(*) begin
@@ -86,8 +130,9 @@ always @(*) begin
 end
 
 // w XOR in the last step
+// TODO:　修改成XOR structure型式
 always @(*) begin
-    w_matrix_cur[0] = {w_g_sub[3], w_g_sub[2], w_g_sub[1], w_g_sub[0]} ^ w_matrix[0];
+    w_matrix_cur[0] = xor4_out;
     w_matrix_cur[1] = w_matrix_cur[0] ^ w_matrix[1];
     w_matrix_cur[2] = w_matrix_cur[1] ^ w_matrix[2];
     w_matrix_cur[3] = w_matrix_cur[2] ^ w_matrix[3];
@@ -128,7 +173,7 @@ always @(posedge clk or negedge rst_n) begin
                 w_g_sub[cnt] <= subBytes_o;
             end
             else if(cnt == 4'd4) begin
-                w_g_sub[3] <= w_g_sub[3] ^ rc_table[round - 4'd1];
+                w_g_sub[3] <= xor4_out[31-:8];
             end  
         end
     end
