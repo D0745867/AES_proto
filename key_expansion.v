@@ -66,7 +66,20 @@ wire [31:0] xor_A1_in, xor_A2_in, xor_A3_in, xor_A4_in
 // XOR output C
 wire [31:0] xor1_out, xor2_out, xor3_out, xor4_out;
 
-// Regular Signal
+// w XOR in the last step
+// w_matrix_cur is new key
+always @(*) begin
+    w_matrix_cur[0] = xor4_out;
+    w_matrix_cur[1] = xor1_out;
+    w_matrix_cur[2] = xor2_out;
+    w_matrix_cur[3] = xor3_out;
+end
+
+// Regular Signal A 會變
+assign xor_A1_in = (inv_en == 1'b0) ? w_matrix_cur[0] : w_matrix[0];
+assign xor_A2_in = (inv_en == 1'b0) ? w_matrix_cur[1] : w_matrix[1];
+assign xor_A3_in = (inv_en == 1'b0) ? w_matrix_cur[2] : w_matrix[2];
+// Regular Signal B 固定
 assign xor_B1_in = w_matrix[1];
 assign xor_B2_in = w_matrix[2];
 assign xor_B3_in = w_matrix[3];
@@ -129,14 +142,6 @@ always @(*) begin
     w_rot[3] = w_g_in[2];
 end
 
-// w XOR in the last step
-// TODO:　修改成XOR structure型式
-always @(*) begin
-    w_matrix_cur[0] = xor4_out;
-    w_matrix_cur[1] = w_matrix_cur[0] ^ w_matrix[1];
-    w_matrix_cur[2] = w_matrix_cur[1] ^ w_matrix[2];
-    w_matrix_cur[3] = w_matrix_cur[2] ^ w_matrix[3];
-end
 
 // w_matrix
 always @(posedge clk or negedge rst_n) begin
