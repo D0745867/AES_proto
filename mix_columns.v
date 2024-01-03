@@ -2,7 +2,7 @@
 
 module xtime (
     output reg [7:0] xtime_o,
-    input reg [7:0] xtime_i
+    input [7:0] xtime_i
 );
     always @(*) begin
         if(xtime_i [7] == 1'b1) begin
@@ -30,7 +30,7 @@ module mix_columns (
     input inv_en
 );
 
-    reg [7:0] mix_col_in_2d [0:3];
+    wire [7:0] mix_col_in_2d [0:3];
 
     // XOR input A
     reg [7:0] xor_A1_in, xor_A2_in, xor_A3_in, xor_A4_in, xor_A5_in, xor_A6_in,  

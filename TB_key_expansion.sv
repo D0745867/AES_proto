@@ -3,14 +3,16 @@
 interface key_expand;
 
     logic [ 4*4*8 ] round_key_o;
+    logic [2:0] current_state;
     logic [ 4*4*8 ] key_in;
     logic [3:0] round;
-    logic [2:0] cnt;
+    logic inv_en;
+    logic [3:0] cnt;
     logic rst_n;
     logic clk;
 
     modport DRV (
-        output key_in, round, cnt, rst_n, clk,
+        output current_state, key_in, round, cnt, inv_en, rst_n, clk,
         input round_key_o
     );
 
@@ -25,10 +27,10 @@ class driver;
         //             , 8'h57, 8'hF0, 8'h19, 8'h16
         //             , 8'h90, 8'h2E, 8'h13, 8'h80
         //             , 8'hAC, 8'hC1, 8'h07, 8'hBD };
-        for (i=0 ; i < 11 ; i = i + 1) begin
+        for (i=1 ; i <= 11 ; i = i + 1) begin
             for (j = 0 ; j < 6; j = j + 1) begin
-                ke.round <= #1 i;
-                ke.cnt <=  #1 j;
+                ke.round <= #5 i;
+                ke.cnt <=  #5 j;
                 #10;
             end
             $display("%0h\n", ke.round_key_o);
@@ -46,7 +48,7 @@ module TB_key_expand;
     // 實例化一個driver
     driver drv;
 
-    key_expansion ke_dut(ke.round_key_o, ke.key_in, ke.round, ke.cnt, ke.rst_n, ke.clk);
+    key_expansion ke_dut(ke.round_key_o, ke.current_state, ke.key_in, ke.round, ke.cnt, ke.inv_en, ke.rst_n, ke.clk);
 
     event rst_n_reset;
 
@@ -63,6 +65,8 @@ module TB_key_expand;
     end
 
     initial begin
+        ke.current_state <= 3'd1;
+        ke.inv_en <= 0;
         ke.clk <= 0;
         ke.rst_n <= 1;
         #10;
@@ -83,7 +87,7 @@ module TB_key_expand;
     end
 
     initial begin
-        $fsdbDumpfile("Key_expand.fsdb");
+        $fsdbDumpfile("Key_expand_inv.fsdb");
         $fsdbDumpvars;
         $fsdbDumpMDA();
     end

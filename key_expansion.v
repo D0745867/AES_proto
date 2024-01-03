@@ -50,7 +50,7 @@ wire [7:0]w_g_in[0:3];
 reg [31:0] w_matrix_cur [0:3];
 
 assign subBytes_i = w_rot[cnt];
-SubBytes dut_subBytes(.byte_o(subBytes_o), .byte_in(subBytes_i));
+SubBytes dut_subBytes(.byte_o(subBytes_o), .byte_in(subBytes_i), .inv_en(1'b0));
 
 // w_g_in signals are condition with mux 
 // TODO: Decesie anothor condition results
@@ -60,7 +60,7 @@ assign w_g_in[2] = (inv_en == 1'b0) ? w_matrix[3][23:16]: 8'b0;
 assign w_g_in[3] = (inv_en == 1'b0) ? w_matrix[3][31:24]: 8'b0;
 
 // 4 XORs
-wire [31:0] xor_A1_in, xor_A2_in, xor_A3_in, xor_A4_in
+reg [31:0] xor_A1_in, xor_A2_in, xor_A3_in, xor_A4_in
          , xor_B1_in, xor_B2_in, xor_B3_in, xor_B4_in;
 
 // XOR output C

@@ -65,7 +65,8 @@ module SubBytes (
     assign data_b2g[7] = 8'b01100000;
 
     // Store
-    reg [7:0] g2b, b2g, inv, inv_AT, inv_in, inv_o, at_o;
+    reg [7:0] g2b, b2g, inv, inv_AT, inv_o, at_o;
+    wire [7:0] inv_in;
 
     // inv_en -> 1'b1 Dec, 1'b0 Enc.
     // 1. Inv_Affine_Transform
