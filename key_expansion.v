@@ -50,7 +50,7 @@ wire [7:0]w_g_in[0:3];
 reg [31:0] w_matrix_cur [0:3];
 
 assign subBytes_i = w_rot[cnt];
-SubBytes dut_subBytes(.byte_o(subBytes_o), .byte_in(subBytes_i), .inv_en(1'b0));
+SubBytes dut_subBytes(.byte_o(subBytes_o), .byte_in(subBytes_i), .inv_en(inv_en));
 
 // w_g_in signals are condition with mux 
 // TODO: Decesie anothor condition results
@@ -99,7 +99,7 @@ always @(*) begin
     else begin
         case (cnt)
         // Use 32bits xor
-        4'd6: // Second
+        4'd5: // Second
             xor_A4_in = w_matrix[0];
         default: // First
             xor_A4_in = {w_g_sub[3], 24'b0};
@@ -120,7 +120,7 @@ always @(*) begin
     else begin
         case (cnt)
         // Use 32bits xor
-        4'd6: // Second
+        4'd5: // Second
             xor_B4_in = {w_g_sub[3], w_g_sub[2], w_g_sub[1], w_g_sub[0]};
         default: // First
             xor_B4_in = {rc_table[round - 4'd1], 24'b0};

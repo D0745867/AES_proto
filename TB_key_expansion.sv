@@ -1,5 +1,4 @@
 `timescale 1ns/1ns
-`define INV
 interface key_expand;
 
     logic [ 4*4*8 ] round_key_o;
@@ -23,7 +22,12 @@ class driver;
     int i, j;
     task run();
         for (i=1 ; i <= 11 ; i = i + 1) begin
-            for (j = 0 ; j < 6; j = j + 1) begin
+            `ifdef INV
+            for (j = -1 ; j < 6; j = j + 1) 
+            `else
+            for (j = 0 ; j < 6; j = j + 1) 
+            `endif 
+            begin
                 ke.round <= #5 i;
                 ke.cnt <=  #5 j;
                 #10;
@@ -49,16 +53,20 @@ module TB_key_expand;
 
     initial begin
         // Setting Key
+        `ifdef INV
+        ke.key_in = 128'hd014f9a8c9ee2589e13f0cc8b6630ca6;
+        `else
         ke.key_in = 128'h2B7E151628AED2A6ABF7158809CF4F3C;
-        // ke.key_in = { 8'hBD, 8'h07, 8'hC1, 8'hAC
-        //     , 8'h80, 8'h13, 8'h2E, 8'h90
-        //     , 8'h16, 8'h19, 8'hF0, 8'h57
-        //     , 8'h21, 8'h0B, 8'hA1, 8'h3C };
+        `endif
     end
 
     initial begin
         ke.current_state <= 3'd1;
+        `ifdef INV
+        ke.inv_en <= 1;
+        `else
         ke.inv_en <= 0;
+        `endif
         ke.clk <= 0;
         ke.rst_n <= 1;
         #10;
