@@ -12,10 +12,11 @@ endmodule
 
 // Single round keygeneration
 // Key_in only needed when first round
-module key_expansion (
-    output [ 4*4*8 - 1 : 0 ]round_key_o,
+module key_expansion #(
+    localparam KEY_WIDTH = 128) (
+    output [ KEY_WIDTH - 1 : 0 ]round_key_o,
     input [2:0] current_state,
-    input [ 4*4*8 - 1 : 0 ] key_in,
+    input [ KEY_WIDTH - 1 : 0 ] key_in,
     input [3:0] round,
     input [3:0] cnt,
     input inv_en,
@@ -50,14 +51,7 @@ wire [7:0]w_g_in[0:3];
 reg [31:0] w_matrix_cur [0:3];
 
 assign subBytes_i = w_rot[cnt];
-SubBytes dut_subBytes(.byte_o(subBytes_o), .byte_in(subBytes_i), .inv_en(inv_en));
-
-// w_g_in signals are condition with mux 
-// TODO: Decesie anothor condition results
-assign w_g_in[0] = (inv_en == 1'b0) ? w_matrix[3][7:0] : 8'b0;
-assign w_g_in[1] = (inv_en == 1'b0) ? w_matrix[3][15:8] : 8'b0;
-assign w_g_in[2] = (inv_en == 1'b0) ? w_matrix[3][23:16]: 8'b0;
-assign w_g_in[3] = (inv_en == 1'b0) ? w_matrix[3][31:24]: 8'b0;
+SubBytes dut_subBytes(.byte_o(subBytes_o), .byte_in(subBytes_i), .inv_en(1'b0));
 
 // 4 XORs
 reg [31:0]  xor_A4_in, xor_B4_in;
@@ -65,6 +59,14 @@ wire [31:0] xor_A1_in, xor_A2_in, xor_A3_in
          , xor_B1_in, xor_B2_in, xor_B3_in;
 // XOR output C
 wire [31:0] xor1_out, xor2_out, xor3_out, xor4_out;
+
+// w_g_in signals are condition with mux 
+// TODO: Decesie anothor condition results
+// 應該是要把out拿出來
+assign w_g_in[0] = (inv_en == 1'b0) ? w_matrix[3][7:0] : xor3_out[7:0];
+assign w_g_in[1] = (inv_en == 1'b0) ? w_matrix[3][15:8] : xor3_out[15:8];
+assign w_g_in[2] = (inv_en == 1'b0) ? w_matrix[3][23:16]: xor3_out[23:16];
+assign w_g_in[3] = (inv_en == 1'b0) ? w_matrix[3][31:24]: xor3_out[31:24];
 
 // w XOR in the last step
 // w_matrix_cur is new key

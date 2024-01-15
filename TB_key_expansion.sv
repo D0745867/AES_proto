@@ -21,7 +21,11 @@ class driver;
     virtual key_expand.DRV ke;
     int i, j;
     task run();
-        for (i=1 ; i <= 11 ; i = i + 1) begin
+        `ifdef INV
+        for (i=10 ; i >= 0 ; i = i - 1) 
+        `else
+        for (i=1 ; i <= 11 ; i = i + 1) 
+        `endif begin
             `ifdef INV
             for (j = -1 ; j < 6; j = j + 1) 
             `else
@@ -32,7 +36,7 @@ class driver;
                 ke.cnt <=  #5 j;
                 #10;
             end
-            $display("%0h\n", ke.round_key_o);
+            $display("Round%d Key -%0h\n", i, ke.round_key_o);
         end
         $finish();
     endtask
