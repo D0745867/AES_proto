@@ -6,19 +6,25 @@ module AES_128 (
     output done,
     input [ 4*4*8 - 1 : 0 ] plaintext,
     input [ 4*4*8 - 1 : 0 ] master_key,
+    input inv_en,
     input clk,
     input rst_n
 );
 
-reg [2:0] current_state;
-reg [2:0] next_state;
+reg [3:0] current_state;
+reg [3:0] next_state;
 
 localparam IDLE = 3'd0;
 localparam AddRoundKey = 3'd1;
 localparam SubBytes = 3'd2;
 localparam ShiftRows = 3'd3;
 localparam MixColumns = 3'd4;
-localparam DONE = 3'd5;
+localparam I_AddRoundKey = 3'd5;
+localparam I_SubBytes = 3'd6;
+localparam I_ShiftRows = 3'd7;
+localparam I_MixColumns = 3'd8;
+localparam DONE = 3'd9;
+
 
 assign done = (current_state == DONE) ? 1'b1 : 1'b0;
 
@@ -57,10 +63,17 @@ wire [ 4*8 -1 : 0] mc_in;
 assign mc_in = (cnt <= 4'd3) ? state[(127 - (32 * cnt))  -: 32] : 32'd0; 
 mix_columns mc_dut(.mix_col_o(mc_out), .mix_col_in(mc_in));
 
-// FSM next
+// FSM next state
 always @(*) begin
     case (current_state)
-        IDLE : next_state = AddRoundKey;
+        IDLE : begin
+            if (inv_en == 1'b0) begin
+                next_state = AddRoundKey;
+            end
+            else begin
+                next_state = I_AddRoundKey;
+            end
+        end 
         AddRoundKey: begin
             if (round == 4'd0) begin
                 next_state = SubBytes;
@@ -94,6 +107,57 @@ always @(*) begin
         DONE: begin
             next_state = IDLE;
         end
+        //=========== Inverse Version ============
+        I_AddRoundKey: begin
+            if (cnt < 4'd6) begin
+                case (round)
+                    4'd10: begin
+                        next_state = shift_rows;
+                    end
+                    default: begin
+                        next_state = I_AddRoundKey;
+                    end
+                endcase
+            end
+            else begin
+                case (round)
+                    4'd0 : begin
+                        next_state = DONE;
+                    end 
+                    default: begin
+                        next_state = I_MixColumns;
+                    end 
+                endcase
+            end
+        end
+
+        I_ShiftRows: begin
+            next_state = I_SubBytes;
+        end
+
+        I_SubBytes: begin
+            if (cnt < 4'd15) begin
+                next_state = I_SubBytes;
+            end
+            else begin
+                if(round == 0) begin
+                    next_state = I_ShiftRows;
+                end
+                else begin
+                    next_state = I_MixColumns;
+                end
+            end
+        end
+
+        I_MixColumns: begin
+            if (cnt < 4'd3) begin
+                next_state = I_MixColumns;
+            end
+            else begin
+                next_state = I_AddRoundKey;
+            end
+        end
+
         default: next_state = IDLE; 
     endcase
 end
