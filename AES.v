@@ -102,7 +102,13 @@ always @(*) begin
         end
         MixColumns: begin
             if (cnt != 4'd3) next_state = MixColumns;  
-            else next_state = AddRoundKey;
+            else begin
+                if (inv_en == 1'b0) begin
+                    next_state = AddRoundKey;
+                end else begin
+                    next_state = I_AddRoundKey;
+                end
+            end 
         end
         DONE: begin
             next_state = IDLE;
@@ -148,13 +154,14 @@ always @(*) begin
                 end
             end
         end
-
+         
+        // Two step
         I_MixColumns: begin
             if (cnt < 4'd3) begin
                 next_state = I_MixColumns;
             end
             else begin
-                next_state = I_AddRoundKey;
+                next_state = MixColumns;
             end
         end
 
@@ -207,9 +214,19 @@ always @(posedge clk or negedge rst_n) begin
         cnt <= 4'd0;
     end
     else begin
-        if(current_state == AddRoundKey || current_state == SubBytes || current_state == MixColumns) begin
+        if(current_state == AddRoundKey 
+        || current_state == SubBytes 
+        || current_state == MixColumns
+        || current_state == I_AddRoundKey
+        || current_state == I_SubBytes
+        || current_state == I_MixColumns
+        ) begin
             if( next_state != current_state) begin
-                cnt <= 4'd0;
+                if (next_state == I_AddRoundKey) begin
+                    cnt <= 4'd15;
+                end else begin
+                    cnt <= 4'd0;
+                end
             end
             else begin
                 cnt <= cnt + 4'd1;
