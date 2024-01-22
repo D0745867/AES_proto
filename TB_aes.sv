@@ -6,12 +6,13 @@ interface aes_inter;
     logic done;
     logic [ 4*4*8 - 1 : 0 ] plaintext;
     logic [ 0 : 4*4*8 - 1 ] master_key;
-    logic rst_n;
     logic clk;
+    logic rst_n;
+    logic inv_en;
 
     // output 是輸出給DUT
     modport DRV (
-        output plaintext, master_key, rst_n, clk,
+        output plaintext, master_key, clk, rst_n, inv_en,
         input ciphertext, done
     );
 
@@ -36,19 +37,36 @@ module TB_aes;
 
     // 實例化一個driver
     driver drv;
+    
 
-    AES_128 aes_dut(aes.ciphertext, aes.done, aes.plaintext, aes.master_key, aes.clk, aes.rst_n);
+    AES_128 aes_dut(aes.ciphertext, aes.done, aes.plaintext
+    , aes.master_key, aes.clk, aes.rst_n, aes.inv_en);
 
     event rst_n_reset;
 
     initial begin
-        // Setting Master Key
+        `ifdef ENC
+        // Setting Master Key for enc mode
         aes.master_key =  128'h2B7E151628AED2A6ABF7158809CF4F3C;
         // Setting plaintext
         aes.plaintext = 128'h3243F6A8885A308D313198A2E0370734;
+        $display("Start AES-128 Encryption!");
+
+        `else
+        // Setting Master Key for dec mode
+        aes.master_key =  128'h2B7E151628AED2A6ABF7158809CF4F3C;
+        // Setting ciphertext
+        aes.plaintext = 128'h3925841d02dc09fbdc118597196a0b32;
+        $display("Start AES-128 Decryptionz!");
+        `endif 
     end
 
     initial begin
+        `ifdef ENC
+        aes.inv_en <= 1;
+        `else
+        aes.inv_en <= 0;
+        `endif
         aes.clk <= 0;
         aes.rst_n <= 1;
         #10;

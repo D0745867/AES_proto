@@ -6,24 +6,24 @@ module AES_128 (
     output done,
     input [ 4*4*8 - 1 : 0 ] plaintext,
     input [ 4*4*8 - 1 : 0 ] master_key,
-    input inv_en,
     input clk,
-    input rst_n
+    input rst_n,
+    input inv_en
 );
 
 reg [3:0] current_state;
 reg [3:0] next_state;
 
-localparam IDLE = 3'd0;
-localparam AddRoundKey = 3'd1;
-localparam SubBytes = 3'd2;
-localparam ShiftRows = 3'd3;
-localparam MixColumns = 3'd4;
-localparam I_AddRoundKey = 3'd5;
-localparam I_SubBytes = 3'd6;
-localparam I_ShiftRows = 3'd7;
-localparam I_MixColumns = 3'd8;
-localparam DONE = 3'd9;
+localparam IDLE = 4'd0;
+localparam AddRoundKey = 4'd1;
+localparam SubBytes = 4'd2;
+localparam ShiftRows = 4'd3;
+localparam MixColumns = 4'd4;
+localparam I_AddRoundKey = 4'd5;
+localparam I_SubBytes = 4'd6;
+localparam I_ShiftRows = 4'd7;
+localparam I_MixColumns = 4'd8;
+localparam DONE = 4'd9;
 
 
 assign done = (current_state == DONE) ? 1'b1 : 1'b0;
@@ -37,7 +37,10 @@ reg [3:0] cnt;
 
 // assign add_rk_o = state ^ round_key_o;
 // Key Expansion
-key_expansion ke_dut(.round_key_o(round_key_o), .current_state(current_state), .key_in(master_key), .round(round), .cnt(cnt), .rst_n(rst_n), .clk(clk));
+key_expansion ke_dut(.round_key_o(round_key_o), .current_state(current_state)
+, .key_in(master_key), .round(round), .cnt(cnt)
+, .rst_n(rst_n), .clk(clk), .inv_en(inv_en));
+
 // SubBytes input: 8bits, output: 8bits
 wire [7:0] subBytes_i;
 wire [7:0] subBytes_o;
@@ -47,21 +50,21 @@ assign subBytes_i = state[ ((cnt + 1)* 8 - 1) -:8 ];
 // assign subBytes_i = state[ 7:0 ];
 
 
-SubBytes dut_subBytes(.byte_o(subBytes_o), .byte_in(subBytes_i));
+SubBytes dut_subBytes(.byte_o(subBytes_o), .byte_in(subBytes_i), .inv_en(inv_en));
 
 // Shift Rows
 wire [ 4*4*8 - 1 : 0] sr_out;
 wire [ 4*4*8 - 1 : 0] sr_in;
 
 assign sr_in = state;
-shift_rows sr_dut(.shift_rows_o(sr_out), .shift_rows_in(sr_in));
+shift_rows sr_dut(.shift_rows_o(sr_out), .shift_rows_in(sr_in), .inv_en(inv_en));
 
 // Mix Columns
 wire [ 4*8 -1 : 0] mc_out;
 wire [ 4*8 -1 : 0] mc_in;
 
 assign mc_in = (cnt <= 4'd3) ? state[(127 - (32 * cnt))  -: 32] : 32'd0; 
-mix_columns mc_dut(.mix_col_o(mc_out), .mix_col_in(mc_in));
+mix_columns mc_dut(.mix_col_o(mc_out), .mix_col_in(mc_in), .inv_en(inv_en));
 
 // FSM next state
 always @(*) begin
@@ -118,7 +121,7 @@ always @(*) begin
             if (cnt < 4'd6) begin
                 case (round)
                     4'd10: begin
-                        next_state = shift_rows;
+                        next_state = ShiftRows;
                     end
                     default: begin
                         next_state = I_AddRoundKey;
