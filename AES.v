@@ -14,16 +14,16 @@ module AES_128 (
 reg [3:0] current_state;
 reg [3:0] next_state;
 
-localparam IDLE = 4'd0;
-localparam AddRoundKey = 4'd1;
-localparam SubBytes = 4'd2;
-localparam ShiftRows = 4'd3;
-localparam MixColumns = 4'd4;
-localparam I_AddRoundKey = 4'd5;
-localparam I_SubBytes = 4'd6;
-localparam I_ShiftRows = 4'd7;
-localparam I_MixColumns = 4'd8;
-localparam DONE = 4'd9;
+parameter IDLE = 4'd0;
+parameter AddRoundKey = 4'd1;
+parameter SubBytes = 4'd2;
+parameter ShiftRows = 4'd3;
+parameter MixColumns = 4'd4;
+parameter I_AddRoundKey = 4'd5;
+parameter I_SubBytes = 4'd6;
+parameter I_ShiftRows = 4'd7;
+parameter I_MixColumns = 4'd8;
+parameter DONE = 4'd9;
 
 
 assign done = (current_state == DONE) ? 1'b1 : 1'b0;
@@ -31,7 +31,7 @@ assign done = (current_state == DONE) ? 1'b1 : 1'b0;
 reg [ 4*4*8 - 1 : 0 ] state;
 reg [3:0] round;
 reg [ 4*4*8 - 1 : 0 ] round_key_o;
-reg [3:0] cnt;
+reg signed [4:0] cnt;
 
 // wire [ 4*4*8 - 1 : 0 ] add_rk_o;
 
@@ -82,7 +82,7 @@ always @(*) begin
                 next_state = SubBytes;
             end
             else begin
-                if (cnt == 4'd6) begin
+                if (cnt == 5'd6) begin
                     if (round != 4'd10) next_state = SubBytes;
                     else next_state = DONE; 
                 end
@@ -92,7 +92,7 @@ always @(*) begin
             end
         end
         SubBytes: begin
-            if (cnt == 4'd15) begin
+            if (cnt == 5'd15) begin
                 next_state = ShiftRows;
             end
             else begin
@@ -104,12 +104,12 @@ always @(*) begin
             else next_state = AddRoundKey;
         end
         MixColumns: begin
-            if (cnt != 4'd3) next_state = MixColumns;  
+            if (cnt != 5'd3) next_state = MixColumns;  
             else begin
                 if (inv_en == 1'b0) begin
                     next_state = AddRoundKey;
                 end else begin
-                    next_state = I_AddRoundKey;
+                    next_state = I_ShiftRows;
                 end
             end 
         end
@@ -118,10 +118,10 @@ always @(*) begin
         end
         //=========== Inverse Version ============
         I_AddRoundKey: begin
-            if (cnt < 4'd6) begin
+            if (cnt <  $signed(5'd6)) begin
                 case (round)
                     4'd10: begin
-                        next_state = ShiftRows;
+                        next_state = I_ShiftRows;
                     end
                     default: begin
                         next_state = I_AddRoundKey;
@@ -145,22 +145,17 @@ always @(*) begin
         end
 
         I_SubBytes: begin
-            if (cnt < 4'd15) begin
+            if (cnt < 5'd15) begin
                 next_state = I_SubBytes;
             end
             else begin
-                if(round == 0) begin
-                    next_state = I_ShiftRows;
-                end
-                else begin
-                    next_state = I_MixColumns;
-                end
+                next_state = I_AddRoundKey;
             end
         end
          
         // Two step
         I_MixColumns: begin
-            if (cnt < 4'd3) begin
+            if (cnt < 5'd3) begin
                 next_state = I_MixColumns;
             end
             else begin
@@ -189,19 +184,30 @@ always @(posedge clk or negedge rst_n) begin
     end
     else begin
         case (current_state)
-            AddRoundKey : begin
-                if(cnt == 4'd6 || round == 4'd0) begin
+            AddRoundKey, I_AddRoundKey : begin
+                if(cnt == 5'd6) begin
                     state <= state ^ round_key_o;
-                    #5 $display("%d %0h\n",round-1 , state);
+                    if (inv_en == 1'b0) begin
+                        #5 $display("%d %0h\n",round-1 , state);
+                    end else begin
+                        #5 $display("%d %0h\n",round+1 , state);
+                    end
+                end
+                else begin
+                    if((inv_en == 1'b0 && round == 4'd0) ||
+                    (inv_en == 1'b1 && round == 4'd10)
+                    ) begin
+                        state <= state ^ round_key_o;
+                    end
                 end
             end 
-            SubBytes : begin
+            SubBytes, I_SubBytes : begin
                 state[ ((cnt + 1)* 8 - 1) -:8 ] <= subBytes_o;
             end
-            ShiftRows : begin
+            ShiftRows, I_ShiftRows : begin
                 state <= sr_out;
             end
-            MixColumns: begin
+            MixColumns, I_MixColumns: begin
                 state[(128 - 32 * cnt) - 1 -: 32] <= mc_out;
             end
             default: begin
@@ -226,9 +232,9 @@ always @(posedge clk or negedge rst_n) begin
         ) begin
             if( next_state != current_state) begin
                 if (next_state == I_AddRoundKey) begin
-                    cnt <= 4'd15;
+                    cnt <= - 5'd1;
                 end else begin
-                    cnt <= 4'd0;
+                    cnt <= 5'd0;
                 end
             end
             else begin
@@ -241,14 +247,26 @@ end
 // Round Counter
 always @(posedge clk or negedge rst_n) begin
     if (~rst_n) begin
-        round <= 4'd0;
+        if(inv_en == 1'b0) begin
+            round <= 4'd0;
+        end
+        else begin
+            round <= 4'd10;
+        end
     end
     else begin
-        if(current_state == AddRoundKey && next_state != AddRoundKey ) begin
-            round <= round + 4'd1;
+        if(inv_en == 1'b0) begin
+            if(current_state == AddRoundKey && next_state != AddRoundKey ) begin
+                round <= round + 4'd1;
+            end
+            else if (round == 4'd0 && current_state == AddRoundKey) begin
+                round <= round + 4'd1;
+            end
         end
-        else if (round == 4'd0 && current_state == AddRoundKey) begin
-            round <= round + 4'd1;
+        else begin
+            if(current_state == I_SubBytes && next_state != I_SubBytes) begin
+                round <= round - 4'd1;
+            end
         end
     end
 end

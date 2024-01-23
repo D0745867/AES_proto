@@ -15,15 +15,15 @@ endmodule
 module key_expansion #(
     localparam KEY_WIDTH = 128) (
     output [ KEY_WIDTH - 1 : 0 ]round_key_o,
-    input [2:0] current_state,
+    input [3:0] current_state,
     input [ KEY_WIDTH - 1 : 0 ] key_in,
     input [3:0] round,
-    input [3:0] cnt,
+    input signed [4:0] cnt,
     input inv_en,
     input rst_n,
     input clk
 );
-localparam AddRoundKey = 3'd1;
+localparam AddRoundKey = 4'd1;
 
 // RC Table
 wire [7:0] rc_table [0:9]; 
@@ -91,7 +91,7 @@ assign xor_B3_in = w_matrix[3];
 // xor_A4_in
 always @(*) begin
     if (inv_en == 1'b0) begin
-        if(cnt <= 4'd4) begin
+        if(cnt <= 5'd4) begin
             xor_A4_in = {w_g_sub[3], 24'b0};
         end else begin
             xor_A4_in = w_matrix[0];
@@ -101,7 +101,7 @@ always @(*) begin
     else begin
         case (cnt)
         // Use 32bits xor
-        4'd5: // Second
+        5'd5: // Second
             xor_A4_in = w_matrix[0];
         default: // First
             xor_A4_in = {w_g_sub[3], 24'b0};
@@ -112,7 +112,7 @@ end
 // xor_B4_in
 always @(*) begin
     if (inv_en == 1'b0) begin
-        if(cnt <= 4'd4) begin
+        if(cnt <= 5'd4) begin
             xor_B4_in = {rc_table[round - 4'd1], 24'b0};
         end else begin
             xor_B4_in = {w_g_sub[3], w_g_sub[2], w_g_sub[1], w_g_sub[0]};
@@ -122,7 +122,7 @@ always @(*) begin
     else begin
         case (cnt)
         // Use 32bits xor
-        4'd5: // Second
+        5'd5: // Second
             xor_B4_in = {w_g_sub[3], w_g_sub[2], w_g_sub[1], w_g_sub[0]};
         default: // First
             xor_B4_in = {rc_table[round - 4'd1], 24'b0};
@@ -154,9 +154,9 @@ always @(posedge clk or negedge rst_n) begin
         w_matrix[3] <= key_in[31:0];
     end
     else begin
-        if(current_state == AddRoundKey) begin
+        if(current_state == AddRoundKey || current_state == I_AddRoundKey) begin
             // Write Back to the w_matrix (final XOR)
-            if(cnt == 4'd5) begin
+            if(cnt == 5'd5) begin
                 w_matrix[0] <= w_matrix_cur[0];
                 w_matrix[1] <= w_matrix_cur[1];
                 w_matrix[2] <= w_matrix_cur[2];
@@ -175,11 +175,11 @@ always @(posedge clk or negedge rst_n) begin
         w_g_sub[3] <= 8'd0;
     end
     else begin
-        if(current_state == AddRoundKey) begin
-            if(cnt >= 4'd0 && cnt <= 4'd3) begin
+        if(current_state == AddRoundKey || current_state == I_AddRoundKey) begin
+            if(cnt >= 5'd0 && cnt <= 5'd3) begin
                 w_g_sub[cnt] <= subBytes_o;
             end
-            else if(cnt == 4'd4) begin
+            else if(cnt == 5'd4) begin
                 w_g_sub[3] <= xor4_out[31-:8];
             end  
         end

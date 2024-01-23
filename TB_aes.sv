@@ -50,22 +50,23 @@ module TB_aes;
         aes.master_key =  128'h2B7E151628AED2A6ABF7158809CF4F3C;
         // Setting plaintext
         aes.plaintext = 128'h3243F6A8885A308D313198A2E0370734;
-        $display("Start AES-128 Encryption!");
+        $display("\n=================Start AES-128 Encryption!=================\n");
 
         `else
         // Setting Master Key for dec mode
-        aes.master_key =  128'h2B7E151628AED2A6ABF7158809CF4F3C;
+        // D014F9A8C9EE2589E13F0CC8B6630CA6
+        aes.master_key =  128'hD014F9A8C9EE2589E13F0CC8B6630CA6;
         // Setting ciphertext
         aes.plaintext = 128'h3925841d02dc09fbdc118597196a0b32;
-        $display("Start AES-128 Decryptionz!");
+        $display("\n=================Start AES-128 Decryption!=================\n");
         `endif 
     end
 
     initial begin
         `ifdef ENC
-        aes.inv_en <= 1;
-        `else
         aes.inv_en <= 0;
+        `else
+        aes.inv_en <= 1;
         `endif
         aes.clk <= 0;
         aes.rst_n <= 1;
