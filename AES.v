@@ -2,7 +2,7 @@
 
 
 module AES_128 (
-    output[ 4*4*8 - 1 : 0 ] ciphertext,
+    output[ 4*4*8 - 1 : 0 ] input_text,
     output done,
     input [ 4*4*8 - 1 : 0 ] plaintext,
     input [ 4*4*8 - 1 : 0 ] master_key,
@@ -14,17 +14,18 @@ module AES_128 (
 reg [3:0] current_state;
 reg [3:0] next_state;
 
-parameter IDLE = 4'd0;
-parameter AddRoundKey = 4'd1;
-parameter SubBytes = 4'd2;
-parameter ShiftRows = 4'd3;
-parameter MixColumns = 4'd4;
-parameter I_AddRoundKey = 4'd5;
-parameter I_SubBytes = 4'd6;
-parameter I_ShiftRows = 4'd7;
-parameter I_MixColumns = 4'd8;
-parameter DONE = 4'd9;
+localparam IDLE = 4'd0;
+localparam AddRoundKey = 4'd1;
+localparam SubBytes = 4'd2;
+localparam ShiftRows = 4'd3;
+localparam MixColumns = 4'd4;
+localparam I_AddRoundKey = 4'd5;
+localparam I_SubBytes = 4'd6;
+localparam I_ShiftRows = 4'd7;
+localparam I_MixColumns = 4'd8;
+localparam DONE = 4'd9;
 
+wire mode_switch = (current_state > 4) ? 1'b1 : 1'b0;
 
 assign done = (current_state == DONE) ? 1'b1 : 1'b0;
 
@@ -39,7 +40,7 @@ reg signed [4:0] cnt;
 // Key Expansion
 key_expansion ke_dut(.round_key_o(round_key_o), .current_state(current_state)
 , .key_in(master_key), .round(round), .cnt(cnt)
-, .rst_n(rst_n), .clk(clk), .inv_en(inv_en));
+, .rst_n(rst_n), .clk(clk), .inv_en(mode_switch));
 
 // SubBytes input: 8bits, output: 8bits
 wire [7:0] subBytes_i;
@@ -50,21 +51,21 @@ assign subBytes_i = state[ ((cnt + 1)* 8 - 1) -:8 ];
 // assign subBytes_i = state[ 7:0 ];
 
 
-SubBytes dut_subBytes(.byte_o(subBytes_o), .byte_in(subBytes_i), .inv_en(inv_en));
+SubBytes dut_subBytes(.byte_o(subBytes_o), .byte_in(subBytes_i), .inv_en(mode_switch));
 
 // Shift Rows
 wire [ 4*4*8 - 1 : 0] sr_out;
 wire [ 4*4*8 - 1 : 0] sr_in;
 
 assign sr_in = state;
-shift_rows sr_dut(.shift_rows_o(sr_out), .shift_rows_in(sr_in), .inv_en(inv_en));
+shift_rows sr_dut(.shift_rows_o(sr_out), .shift_rows_in(sr_in), .inv_en(mode_switch));
 
 // Mix Columns
 wire [ 4*8 -1 : 0] mc_out;
 wire [ 4*8 -1 : 0] mc_in;
 
 assign mc_in = (cnt <= 4'd3) ? state[(127 - (32 * cnt))  -: 32] : 32'd0; 
-mix_columns mc_dut(.mix_col_o(mc_out), .mix_col_in(mc_in), .inv_en(inv_en));
+mix_columns mc_dut(.mix_col_o(mc_out), .mix_col_in(mc_in), .inv_en(mode_switch));
 
 // FSM next state
 always @(*) begin

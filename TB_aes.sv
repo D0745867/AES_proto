@@ -51,7 +51,7 @@ module TB_aes;
         // Setting plaintext
         aes.plaintext = 128'h3243F6A8885A308D313198A2E0370734;
         $display("\n=================Start AES-128 Encryption!=================\n");
-
+        $display("The Plaintext: %h\n",aes.plaintext);
         `else
         // Setting Master Key for dec mode
         // D014F9A8C9EE2589E13F0CC8B6630CA6

@@ -24,6 +24,7 @@ module key_expansion #(
     input clk
 );
 localparam AddRoundKey = 4'd1;
+localparam I_AddRoundKey = 4'd5;
 
 // RC Table
 wire [7:0] rc_table [0:9]; 
@@ -125,7 +126,7 @@ always @(*) begin
         5'd5: // Second
             xor_B4_in = {w_g_sub[3], w_g_sub[2], w_g_sub[1], w_g_sub[0]};
         default: // First
-            xor_B4_in = {rc_table[round - 4'd1], 24'b0};
+            xor_B4_in = {rc_table[round], 24'b0};
         endcase
     end
 end
