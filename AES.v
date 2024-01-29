@@ -2,14 +2,15 @@
 
 
 module AES_128 (
-    output[ 4*4*8 - 1 : 0 ] input_text,
+    output[ 4*4*8 - 1 : 0 ] output_text,
     output done,
-    input [ 4*4*8 - 1 : 0 ] plaintext,
+    input [ 4*4*8 - 1 : 0 ] input_text,
     input [ 4*4*8 - 1 : 0 ] master_key,
     input clk,
     input rst_n,
     input inv_en
 );
+
 
 reg [3:0] current_state;
 reg [3:0] next_state;
@@ -34,6 +35,7 @@ reg [3:0] round;
 reg [ 4*4*8 - 1 : 0 ] round_key_o;
 reg signed [4:0] cnt;
 
+assign output_text = state;
 // wire [ 4*4*8 - 1 : 0 ] add_rk_o;
 
 // assign add_rk_o = state ^ round_key_o;
@@ -181,7 +183,7 @@ end
 // State Matrix
 always @(posedge clk or negedge rst_n) begin
     if (~rst_n) begin
-        state <= plaintext;
+        state <= input_text;
     end
     else begin
         case (current_state)
