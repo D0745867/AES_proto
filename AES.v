@@ -3,6 +3,7 @@
 
 module AES_128 (
     output[ 4*4*8 - 1 : 0 ] output_text,
+    output[ 4*4*8 - 1 : 0 ] master_key_out,
     output done,
     input [ 4*4*8 - 1 : 0 ] input_text,
     input [ 4*4*8 - 1 : 0 ] master_key,
@@ -34,7 +35,7 @@ reg [ 4*4*8 - 1 : 0 ] state;
 reg [3:0] round;
 reg [ 4*4*8 - 1 : 0 ] round_key_o;
 reg signed [4:0] cnt;
-
+assign master_key_out = round_key_o;
 assign output_text = state;
 // wire [ 4*4*8 - 1 : 0 ] add_rk_o;
 

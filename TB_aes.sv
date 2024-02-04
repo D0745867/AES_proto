@@ -32,6 +32,11 @@ class driver;
         `endif 
         $finish();
     endtask
+    
+    // Random Test
+    // task automatic random_input();
+    //     aes.input_text = $random;
+    // endtask
 
 endclass
 

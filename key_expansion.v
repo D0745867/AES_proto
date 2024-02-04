@@ -13,7 +13,7 @@ endmodule
 // Single round keygeneration
 // Key_in only needed when first round
 module key_expansion #(
-    localparam KEY_WIDTH = 128) (
+    parameter KEY_WIDTH = 128) (
     output [ KEY_WIDTH - 1 : 0 ]round_key_o,
     input [3:0] current_state,
     input [ KEY_WIDTH - 1 : 0 ] key_in,
